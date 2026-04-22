@@ -3,6 +3,7 @@
 This repo is now a stripped-down AR.js/A-Frame marker demo.
 
 - `index.html` is the AR experience.
+- `app.js` keeps the AR viewport, camera feed, and canvas in sync.
 - `marker.html` shows the bundled `barcode-5.png` marker.
 - `assets/markers/barcode-5.png` is the marker image the demo expects.
 

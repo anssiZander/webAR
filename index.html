@@ -2,21 +2,39 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
     <title>A-Frame WebAR Demo</title>
-    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.8/aframe/build/aframe-ar.js"></script>
+    <script src="./app.js" defer></script>
     <style>
+      :root {
+        --app-height: 100vh;
+      }
+
+      html,
       body {
         margin: 0;
+        width: 100%;
+        height: 100%;
         overflow: hidden;
+        background: #000000;
         font-family: sans-serif;
+      }
+
+      body {
+        position: fixed;
+        inset: 0;
+        touch-action: manipulation;
       }
 
       #ui-overlay {
         position: absolute;
-        top: 10px;
-        left: 10px;
+        top: max(10px, env(safe-area-inset-top));
+        left: max(10px, env(safe-area-inset-left));
         z-index: 10;
         max-width: 280px;
         padding: 15px;
@@ -56,6 +74,25 @@
       #status {
         color: #aaaaaa;
       }
+
+      a-scene,
+      .a-canvas,
+      canvas,
+      video,
+      #arjs-video {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: var(--app-height) !important;
+        max-width: none !important;
+        max-height: none !important;
+      }
+
+      a-scene,
+      .a-canvas,
+      canvas {
+        background: transparent !important;
+      }
     </style>
   </head>
   <body>
@@ -73,6 +110,7 @@
 
     <a-scene
       embedded
+      renderer="antialias: true; alpha: true;"
       arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
       vr-mode-ui="enabled: false"
     >
@@ -112,20 +150,5 @@
 
       <a-entity camera></a-entity>
     </a-scene>
-
-    <script>
-      const marker = document.querySelector("#main-marker");
-      const statusText = document.querySelector("#status");
-
-      marker.addEventListener("markerFound", () => {
-        statusText.innerText = "Marker found!";
-        statusText.style.color = "#00ff00";
-      });
-
-      marker.addEventListener("markerLost", () => {
-        statusText.innerText = "Waiting for marker...";
-        statusText.style.color = "#aaaaaa";
-      });
-    </script>
   </body>
 </html>
