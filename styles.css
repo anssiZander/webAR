@@ -39,6 +39,34 @@ a-scene {
   height: 100vh;
 }
 
+body.demo-page {
+  background: transparent;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+}
+
+body.demo-page video,
+body.demo-page #arjs-video {
+  position: fixed !important;
+  inset: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  object-fit: cover;
+  z-index: 0 !important;
+  background: #000000;
+}
+
+body.demo-page a-scene,
+body.demo-page canvas.a-canvas {
+  position: fixed !important;
+  inset: 0;
+  z-index: 1 !important;
+}
+
+body.demo-page .hud {
+  z-index: 20;
+}
+
 .hud {
   position: fixed;
   inset: 0 auto auto 0;
@@ -163,6 +191,7 @@ h1 {
   margin: 0 auto;
   background: #ffffff;
   object-fit: contain;
+  image-rendering: pixelated;
 }
 
 @media (max-width: 640px) {
