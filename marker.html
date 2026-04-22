@@ -1,31 +1,79 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Marker #5</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Barcode Marker #5</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 24px;
+        color: #111827;
+        background: #f3f4f6;
+        font-family: sans-serif;
+      }
+
+      main {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 24px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+      }
+
+      h1 {
+        margin-top: 0;
+      }
+
+      p {
+        line-height: 1.5;
+      }
+
+      img {
+        display: block;
+        width: 100%;
+        max-width: 420px;
+        margin: 24px auto;
+        background: white;
+        image-rendering: pixelated;
+      }
+
+      a {
+        color: #2563eb;
+      }
+
+      @media print {
+        body {
+          padding: 0;
+          background: white;
+        }
+
+        main {
+          max-width: none;
+          padding: 0;
+          box-shadow: none;
+        }
+
+        .no-print {
+          display: none;
+        }
+      }
+    </style>
   </head>
-  <body class="marker-page">
-    <main class="marker-sheet">
-      <p class="eyebrow">Tag Image</p>
-      <h1>Marker #5</h1>
-      <p class="copy">
-        Print this page or show the marker on a second screen. Then open the AR
-        demo on your phone and point the camera at the tag.
+  <body>
+    <main>
+      <h1>Barcode Marker #5</h1>
+      <p>
+        Show this marker on another screen or print it, then point the AR demo
+        camera at it.
       </p>
-      <div class="marker-frame">
-        <img
-          src="./assets/markers/barcode-5@4x.png"
-          alt="Barcode marker number 5 for the AR demo"
-        />
-      </div>
-      <p class="copy copy--small">
-        Best results: bright even light, flat marker, and at least 12 cm wide.
-      </p>
-      <div class="actions">
-        <a class="link-button" href="./index.html">Back To Demo</a>
-      </div>
+      <img
+        src="./assets/markers/barcode-5.png"
+        alt="Barcode marker number 5"
+      />
+      <p>Keep the marker flat, well lit, and large enough to fill the guide box.</p>
+      <p class="no-print"><a href="./index.html">Back to demo</a></p>
     </main>
   </body>
 </html>

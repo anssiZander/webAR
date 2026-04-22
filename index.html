@@ -1,100 +1,131 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
-    <title>A-Frame Marker AR Demo</title>
-    <link rel="stylesheet" href="./styles.css" />
-    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.8/aframe/build/aframe-ar.js"></script>
-    <script src="./app.js" defer></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>A-Frame WebAR Demo</title>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        font-family: sans-serif;
+      }
+
+      #ui-overlay {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 10;
+        max-width: 280px;
+        padding: 15px;
+        color: white;
+        background: rgba(0, 0, 0, 0.7);
+        border-radius: 8px;
+      }
+
+      #ui-overlay h2 {
+        margin: 0 0 10px;
+      }
+
+      #ui-overlay p {
+        margin: 0 0 10px;
+      }
+
+      #ui-overlay p:last-child {
+        margin-bottom: 0;
+      }
+
+      #ui-overlay a {
+        color: #7dd3fc;
+      }
+
+      .marker-guide {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 150px;
+        height: 150px;
+        border: 2px solid #00ff00;
+        opacity: 0.5;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+      }
+
+      #status {
+        color: #aaaaaa;
+      }
+    </style>
   </head>
-  <body class="demo-page">
-    <div class="hud">
-      <section class="hud__card">
-        <p class="eyebrow">Mobile Web AR / A-Frame</p>
-        <h1>Marker Demo</h1>
-        <p class="copy">
-          Point the phone at the bundled tag image. When marker
-          <strong>#5</strong> is recognized, a simple primitive stack appears
-          anchored on top of it.
-        </p>
-        <p id="status" class="status status--waiting">
-          Requesting camera access...
-        </p>
-        <div class="actions">
-          <a class="link-button" href="./marker.html">Open Marker</a>
-        </div>
-      </section>
+  <body>
+    <div id="ui-overlay">
+      <h2>WebAR Demo</h2>
+      <p>1. Point your camera at <strong>barcode marker #5</strong>.</p>
+      <p>2. The box, ring, and label should appear on top of it.</p>
+      <p>Marker image: <a href="./marker.html">open marker page</a></p>
+      <p style="font-size: 0.8em; color: #aaaaaa">
+        Status: <span id="status">Waiting for marker...</span>
+      </p>
     </div>
+
+    <div class="marker-guide"></div>
 
     <a-scene
       embedded
-      loading-screen="enabled: false"
-      renderer="antialias: true; alpha: true; colorManagement: true;"
+      arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
       vr-mode-ui="enabled: false"
-      arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3; maxDetectionRate: 30;"
     >
-      <a-marker
-        id="marker-root"
-        type="barcode"
-        value="5"
-        emitevents="true"
-        smooth="true"
-        smooth-count="10"
-        smooth-tolerance="0.01"
-        smooth-threshold="5"
-      >
-        <a-entity position="0 0 0">
-          <a-circle
-            position="0 0.01 0"
-            rotation="-90 0 0"
-            radius="0.46"
-            color="#0f172a"
-            material="opacity: 0.82; roughness: 0.72"
-          ></a-circle>
+      <a-assets>
+        <img
+          id="grid"
+          src="https://cdn.aframe.io/a-painter/images/floor.jpg"
+          crossorigin="anonymous"
+        />
+      </a-assets>
 
-          <a-torus
-            position="0 0.08 0"
-            rotation="90 0 0"
-            radius="0.3"
-            radius-tubular="0.018"
-            color="#facc15"
-            material="emissive: #ca8a04; emissiveIntensity: 0.38"
-          ></a-torus>
+      <a-marker type="barcode" value="5" id="main-marker" emitevents="true">
+        <a-box
+          position="0 0.5 0"
+          material="src: #grid; color: #4CC3D9; transparent: true; opacity: 0.9"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 5000; easing: linear"
+        ></a-box>
 
-          <a-box
-            position="0 0.34 0"
-            depth="0.28"
-            height="0.28"
-            width="0.28"
-            color="#38bdf8"
-            material="metalness: 0.15; roughness: 0.35"
-            animation__spin="property: rotation; to: 360 360 0; dur: 4200; loop: true; easing: linear"
-            animation__float="property: position; from: 0 0.28 0; to: 0 0.42 0; dur: 1400; dir: alternate; loop: true; easing: easeInOutSine"
-          ></a-box>
+        <a-text
+          value="Barcode #5"
+          position="0 1.2 0"
+          align="center"
+          color="#FFFFFF"
+          scale="1.5 1.5 1.5"
+          geometry="primitive: plane; width: 1.7; height: 0.3"
+          material="color: #333333"
+        ></a-text>
 
-          <a-cone
-            position="0 0.62 0"
-            radius-bottom="0.08"
-            radius-top="0.01"
-            height="0.18"
-            color="#fb7185"
-            animation__pulse="property: scale; from: 1 1 1; to: 1.15 1.15 1.15; dur: 900; dir: alternate; loop: true; easing: easeInOutSine"
-          ></a-cone>
-
-          <a-entity light="type: ambient; intensity: 0.8; color: #ffffff"></a-entity>
-          <a-entity
-            position="0 1 0.4"
-            light="type: point; intensity: 1.1; color: #fff7ed; distance: 3"
-          ></a-entity>
-        </a-entity>
+        <a-ring
+          color="#EF2D5E"
+          radius-inner="0.6"
+          radius-outer="0.7"
+          rotation="-90 0 0"
+          animation="property: scale; from: 1 1 1; to: 1.2 1.2 1.2; dir: alternate; loop: true; dur: 1000"
+        ></a-ring>
       </a-marker>
 
       <a-entity camera></a-entity>
     </a-scene>
+
+    <script>
+      const marker = document.querySelector("#main-marker");
+      const statusText = document.querySelector("#status");
+
+      marker.addEventListener("markerFound", () => {
+        statusText.innerText = "Marker found!";
+        statusText.style.color = "#00ff00";
+      });
+
+      marker.addEventListener("markerLost", () => {
+        statusText.innerText = "Waiting for marker...";
+        statusText.style.color = "#aaaaaa";
+      });
+    </script>
   </body>
 </html>
