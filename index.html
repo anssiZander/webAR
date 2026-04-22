@@ -1,154 +1,240 @@
 <!DOCTYPE html>
+
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-    />
-    <title>A-Frame WebAR Demo</title>
-    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.8/aframe/build/aframe-ar.js"></script>
-    <script src="./app.js" defer></script>
-    <style>
-      :root {
-        --app-height: 100vh;
-      }
 
-      html,
-      body {
-        margin: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        background: #000000;
-        font-family: sans-serif;
-      }
+<head>
 
-      body {
-        position: fixed;
-        inset: 0;
-        touch-action: manipulation;
-      }
+<meta charset="UTF-8">
 
-      #ui-overlay {
-        position: absolute;
-        top: max(10px, env(safe-area-inset-top));
-        left: max(10px, env(safe-area-inset-left));
-        z-index: 10;
-        max-width: 280px;
-        padding: 15px;
-        color: white;
-        background: rgba(0, 0, 0, 0.7);
-        border-radius: 8px;
-      }
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-      #ui-overlay h2 {
-        margin: 0 0 10px;
-      }
+<title>A-Frame WebAR Demo</title>
 
-      #ui-overlay p {
-        margin: 0 0 10px;
-      }
+<!-- A-Frame Library -->
 
-      #ui-overlay p:last-child {
-        margin-bottom: 0;
-      }
+<script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
 
-      #ui-overlay a {
-        color: #7dd3fc;
-      }
+<!-- AR.js for A-Frame -->
 
-      .marker-guide {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 150px;
-        height: 150px;
-        border: 2px solid #00ff00;
-        opacity: 0.5;
-        pointer-events: none;
-        transform: translate(-50%, -50%);
-      }
+<script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 
-      #status {
-        color: #aaaaaa;
-      }
 
-      a-scene,
-      .a-canvas,
-      canvas,
-      video,
-      #arjs-video {
-        position: fixed !important;
-        inset: 0 !important;
-        width: 100vw !important;
-        height: var(--app-height) !important;
-        max-width: none !important;
-        max-height: none !important;
-      }
+<style>
 
-      a-scene,
-      .a-canvas,
-      canvas {
-        background: transparent !important;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="ui-overlay">
-      <h2>WebAR Demo</h2>
-      <p>1. Point your camera at <strong>barcode marker #5</strong>.</p>
-      <p>2. The box, ring, and label should appear on top of it.</p>
-      <p>Marker image: <a href="./marker.html">open marker page</a></p>
-      <p style="font-size: 0.8em; color: #aaaaaa">
-        Status: <span id="status">Waiting for marker...</span>
-      </p>
-    </div>
+body { margin: 0; overflow: hidden; font-family: sans-serif; }
 
-    <div class="marker-guide"></div>
+#ui-overlay {
 
-    <a-scene
-      embedded
-      renderer="antialias: true; alpha: true;"
-      arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
-      vr-mode-ui="enabled: false"
-    >
-      <a-assets>
-        <img
-          id="grid"
-          src="https://cdn.aframe.io/a-painter/images/floor.jpg"
-          crossorigin="anonymous"
-        />
-      </a-assets>
+position: absolute;
 
-      <a-marker type="barcode" value="5" id="main-marker" emitevents="true">
-        <a-box
-          position="0 0.5 0"
-          material="src: #grid; color: #4CC3D9; transparent: true; opacity: 0.9"
-          animation="property: rotation; to: 0 360 0; loop: true; dur: 5000; easing: linear"
-        ></a-box>
+top: 10px;
 
-        <a-text
-          value="Barcode #5"
-          position="0 1.2 0"
-          align="center"
-          color="#FFFFFF"
-          scale="1.5 1.5 1.5"
-          geometry="primitive: plane; width: 1.7; height: 0.3"
-          material="color: #333333"
-        ></a-text>
+left: 10px;
 
-        <a-ring
-          color="#EF2D5E"
-          radius-inner="0.6"
-          radius-outer="0.7"
-          rotation="-90 0 0"
-          animation="property: scale; from: 1 1 1; to: 1.2 1.2 1.2; dir: alternate; loop: true; dur: 1000"
-        ></a-ring>
-      </a-marker>
+z-index: 10;
 
-      <a-entity camera></a-entity>
-    </a-scene>
-  </body>
+background: rgba(0, 0, 0, 0.7);
+
+color: white;
+
+padding: 15px;
+
+border-radius: 8px;
+
+max-width: 250px;
+
+pointer-events: none;
+
+}
+
+.marker-guide {
+
+border: 2px solid #00ff00;
+
+width: 150px;
+
+height: 150px;
+
+position: absolute;
+
+top: 50%;
+
+left: 50%;
+
+transform: translate(-50%, -50%);
+
+pointer-events: none;
+
+opacity: 0.5;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+
+<!-- UI Information Overlay -->
+
+<div id="ui-overlay">
+
+<h2 style="margin-top:0">WebAR Demo</h2>
+
+<p>1. Point your camera at a <strong>Hiro Marker</strong>.</p>
+
+<p>2. A 3D interactive box will appear on top of it.</p>
+
+<p style="font-size: 0.8em; color: #aaa;">Status: <span id="status">Waiting for Marker...</span></p>
+
+</div>
+
+
+<!-- Visual Guide for the User -->
+
+<div class="marker-guide"></div>
+
+
+<!--
+
+A-Scene setup:
+
+- embedded: keeps it within the div/body
+
+- arjs: initializes the AR engine
+
+- vr-mode-ui: disabled because we are using the phone screen as the view, not a headset
+
+-->
+
+<a-scene
+
+embedded
+
+arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;"
+
+vr-mode-ui="enabled: false">
+
+
+<!-- Define the Assets (Materials, Models) -->
+
+<a-assets>
+
+<!--
+
+FIX: Added crossorigin="anonymous" to the image tag.
+
+This is required when loading textures from a different domain
+
+to satisfy WebGL/Three.js security policies (CORS).
+
+-->
+
+<img id="grid" src="https://cdn.aframe.io/a-painter/images/floor.jpg" crossorigin="anonymous">
+
+</a-assets>
+
+
+<!--A-Marker: The anchor for the AR content.
+
+"preset: hiro" uses the standard hiro pattern.
+
+-->
+
+<a-marker preset="hiro" id="main-marker">
+
+
+<!-- A 3D Box that appears when the marker is found -->
+
+<a-box
+
+position="0 0.5 0"
+
+material="src: #grid; color: #4CC3D9; transparent: true; opacity: 0.9"
+
+animation="property: rotation; to: 0 360 0; loop: true; dur: 5000; easing: linear">
+
+</a-box>
+
+
+<!-- A floating text label -->
+
+<a-text
+
+value="A-Frame AR"
+
+position="0 1.2 0"
+
+align="center"
+
+color="#FFF"
+
+scale="1.5 1.5 1.5"
+
+geometry="primitive: plane; width: 1.5; height: 0.3"
+
+material="color: #333">
+
+</a-text>
+
+
+<!-- A rotating ring around the base -->
+
+<a-ring
+
+color="#EF2D5E"
+
+radius-inner="0.6"
+
+radius-outer="0.7"
+
+rotation="-90 0 0"
+
+animation="property: scale; from: 1 1 1; to: 1.2 1.2 1.2; dir: alternate; loop: true; dur: 1000">
+
+</a-ring>
+
+
+</a-marker>
+
+
+<!-- Static camera that moves according to the marker position -->
+
+<a-entity camera></a-entity>
+
+
+</a-scene>
+
+
+<script>
+
+// Simple logic to update the UI status based on marker detection
+
+const marker = document.querySelector('#main-marker');
+
+const statusText = document.querySelector('#status');
+
+
+marker.addEventListener('markerFound', () => {
+
+statusText.innerText = "Marker Found!";
+
+statusText.style.color = "#00ff00";
+
+});
+
+
+marker.addEventListener('markerLost', () => {
+
+statusText.innerText = "Waiting for Marker...";
+
+statusText.style.color = "#aaa";
+
+});
+
+</script>
+
+</body>
+
 </html>
