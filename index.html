@@ -1,240 +1,204 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A-Frame WebAR Demo</title>
 
-<meta charset="UTF-8">
+  <!-- A-Frame Library -->
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- AR.js for A-Frame -->
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 
-<title>A-Frame WebAR Demo</title>
+  <script>
+    AFRAME.registerComponent('grow-from-marker', {
+      schema: {
+        height: { type: 'number', default: 0.18 },
+        duration: { type: 'number', default: 1200 }
+      },
 
-<!-- A-Frame Library -->
+      init() {
+        this.elapsed = 0;
+        this.growing = false;
+        this.completed = false;
+        this.setGrowthProgress(0.001);
 
-<script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+        this.el.addEventListener('growBoundary', () => {
+          if (this.growing || this.completed) return;
 
-<!-- AR.js for A-Frame -->
+          this.elapsed = 0;
+          this.growing = true;
+        });
+      },
 
-<script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+      tick(time, delta) {
+        if (!this.growing) return;
 
+        this.elapsed += delta;
+        const progress = Math.min(this.elapsed / this.data.duration, 1);
+        const easedProgress = 1 - Math.pow(1 - progress, 3);
 
-<style>
+        this.setGrowthProgress(Math.max(easedProgress, 0.001));
 
-body { margin: 0; overflow: hidden; font-family: sans-serif; }
+        if (progress === 1) {
+          this.setGrowthProgress(1);
+          this.growing = false;
+          this.completed = true;
+        }
+      },
 
-#ui-overlay {
+      setGrowthProgress(scaleY) {
+        this.el.object3D.scale.y = scaleY;
+        this.el.object3D.position.y = (this.data.height * scaleY) / 2;
+      }
+    });
+  </script>
 
-position: absolute;
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
 
-top: 10px;
+    #ui-overlay {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      max-width: 250px;
+      pointer-events: none;
+    }
 
-left: 10px;
-
-z-index: 10;
-
-background: rgba(0, 0, 0, 0.7);
-
-color: white;
-
-padding: 15px;
-
-border-radius: 8px;
-
-max-width: 250px;
-
-pointer-events: none;
-
-}
-
-.marker-guide {
-
-border: 2px solid #00ff00;
-
-width: 150px;
-
-height: 150px;
-
-position: absolute;
-
-top: 50%;
-
-left: 50%;
-
-transform: translate(-50%, -50%);
-
-pointer-events: none;
-
-opacity: 0.5;
-
-}
-
-</style>
-
+    .marker-guide {
+      border: 2px solid #00ff00;
+      width: 150px;
+      height: 150px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      opacity: 0.5;
+    }
+  </style>
 </head>
-
 <body>
-
-
-<!-- UI Information Overlay -->
-
-<div id="ui-overlay">
-
-<h2 style="margin-top:0">WebAR Demo</h2>
-
-<p>1. Point your camera at a <strong>Hiro Marker</strong>.</p>
-
-<p>2. A 3D interactive box will appear on top of it.</p>
-
-<p style="font-size: 0.8em; color: #aaa;">Status: <span id="status">Waiting for Marker...</span></p>
-
-</div>
-
-
-<!-- Visual Guide for the User -->
-
-<div class="marker-guide"></div>
-
-
-<!--
-
-A-Scene setup:
-
-- embedded: keeps it within the div/body
-
-- arjs: initializes the AR engine
-
-- vr-mode-ui: disabled because we are using the phone screen as the view, not a headset
-
--->
-
-<a-scene
-
-embedded
-
-arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;"
-
-vr-mode-ui="enabled: false">
-
-
-<!-- Define the Assets (Materials, Models) -->
-
-<a-assets>
-
-<!--
-
-FIX: Added crossorigin="anonymous" to the image tag.
-
-This is required when loading textures from a different domain
-
-to satisfy WebGL/Three.js security policies (CORS).
-
--->
-
-<img id="grid" src="https://cdn.aframe.io/a-painter/images/floor.jpg" crossorigin="anonymous">
-
-</a-assets>
-
-
-<!--A-Marker: The anchor for the AR content.
-
-"preset: hiro" uses the standard hiro pattern.
-
--->
-
-<a-marker preset="hiro" id="main-marker">
-
-
-<!-- A 3D Box that appears when the marker is found -->
-
-<a-box
-
-position="0 0.5 0"
-
-material="src: #grid; color: #4CC3D9; transparent: true; opacity: 0.9"
-
-animation="property: rotation; to: 0 360 0; loop: true; dur: 5000; easing: linear">
-
-</a-box>
-
-
-<!-- A floating text label -->
-
-<a-text
-
-value="A-Frame AR"
-
-position="0 1.2 0"
-
-align="center"
-
-color="#FFF"
-
-scale="1.5 1.5 1.5"
-
-geometry="primitive: plane; width: 1.5; height: 0.3"
-
-material="color: #333">
-
-</a-text>
-
-
-<!-- A rotating ring around the base -->
-
-<a-ring
-
-color="#EF2D5E"
-
-radius-inner="0.6"
-
-radius-outer="0.7"
-
-rotation="-90 0 0"
-
-animation="property: scale; from: 1 1 1; to: 1.2 1.2 1.2; dir: alternate; loop: true; dur: 1000">
-
-</a-ring>
-
-
-</a-marker>
-
-
-<!-- Static camera that moves according to the marker position -->
-
-<a-entity camera></a-entity>
-
-
-</a-scene>
-
-
-<script>
-
-// Simple logic to update the UI status based on marker detection
-
-const marker = document.querySelector('#main-marker');
-
-const statusText = document.querySelector('#status');
-
-
-marker.addEventListener('markerFound', () => {
-
-statusText.innerText = "Marker Found!";
-
-statusText.style.color = "#00ff00";
-
-});
-
-
-marker.addEventListener('markerLost', () => {
-
-statusText.innerText = "Waiting for Marker...";
-
-statusText.style.color = "#aaa";
-
-});
-
-</script>
-
+  <!-- UI Information Overlay -->
+  <div id="ui-overlay">
+    <h2 style="margin-top:0">WebAR Demo</h2>
+    <p>1. Point your camera at a <strong>Hiro Marker</strong>.</p>
+    <p>2. The marker boundary will rise from the surface.</p>
+    <p style="font-size: 0.8em; color: #aaa;">Status: <span id="status">Waiting for Marker...</span></p>
+  </div>
+
+  <!-- Visual Guide for the User -->
+  <div class="marker-guide"></div>
+
+  <!--
+    A-Scene setup:
+    - embedded: keeps it within the div/body
+    - arjs: initializes the AR engine
+    - vr-mode-ui: disabled because we are using the phone screen as the view, not a headset
+  -->
+  <a-scene
+    embedded
+    arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;"
+    vr-mode-ui="enabled: false">
+
+    <!--
+      A-Marker: The anchor for the AR content.
+      "preset: hiro" uses the standard hiro pattern.
+    -->
+    <a-marker preset="hiro" id="main-marker">
+      <!--
+        Raised Hiro marker border.
+        The marker side is 1 A-Frame unit; each boundary strip is 0.18 wide
+        and grows to that same 0.18-unit height.
+      -->
+      <a-box
+        class="hiro-boundary"
+        width="1"
+        height="0.18"
+        depth="0.18"
+        position="0 0 -0.41"
+        material="color: #111111; roughness: 0.65; metalness: 0.05"
+        grow-from-marker="height: 0.18; duration: 1200">
+      </a-box>
+
+      <a-box
+        class="hiro-boundary"
+        width="1"
+        height="0.18"
+        depth="0.18"
+        position="0 0 0.41"
+        material="color: #111111; roughness: 0.65; metalness: 0.05"
+        grow-from-marker="height: 0.18; duration: 1200">
+      </a-box>
+
+      <a-box
+        class="hiro-boundary"
+        width="0.18"
+        height="0.18"
+        depth="0.64"
+        position="-0.41 0 0"
+        material="color: #111111; roughness: 0.65; metalness: 0.05"
+        grow-from-marker="height: 0.18; duration: 1200">
+      </a-box>
+
+      <a-box
+        class="hiro-boundary"
+        width="0.18"
+        height="0.18"
+        depth="0.64"
+        position="0.41 0 0"
+        material="color: #111111; roughness: 0.65; metalness: 0.05"
+        grow-from-marker="height: 0.18; duration: 1200">
+      </a-box>
+
+      <!-- A floating text label -->
+      <a-text
+        value="A-Frame AR"
+        position="0 1.2 0"
+        align="center"
+        color="#FFF"
+        scale="1.5 1.5 1.5"
+        geometry="primitive: plane; width: 1.5; height: 0.3"
+        material="color: #333">
+      </a-text>
+    </a-marker>
+
+    <!-- Static camera that moves according to the marker position -->
+    <a-entity camera></a-entity>
+  </a-scene>
+
+  <script>
+    // Simple logic to update the UI status based on marker detection.
+    const marker = document.querySelector('#main-marker');
+    const statusText = document.querySelector('#status');
+    let boundaryGrowthStarted = false;
+
+    marker.addEventListener('markerFound', () => {
+      statusText.innerText = 'Marker Found!';
+      statusText.style.color = '#00ff00';
+
+      if (!boundaryGrowthStarted) {
+        boundaryGrowthStarted = true;
+        document.querySelectorAll('.hiro-boundary').forEach((boundary) => {
+          boundary.emit('growBoundary');
+        });
+      }
+    });
+
+    marker.addEventListener('markerLost', () => {
+      statusText.innerText = 'Waiting for Marker...';
+      statusText.style.color = '#aaa';
+    });
+  </script>
 </body>
-
 </html>
