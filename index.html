@@ -1,438 +1,239 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
 
-  <!-- Important for mobile AR/video behavior -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
+<meta charset="UTF-8">
 
-  <title>WebAR Video Gallery</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- A-Frame -->
-  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+<title>A-Frame WebAR Demo</title>
 
-  <!-- AR.js for A-Frame -->
-  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+<!-- A-Frame Library -->
 
-  <style>
-    :root {
-      --ui-offset: 12px;
-      --ui-width: 310px;
-      --ui-pad-y: 12px;
-      --ui-pad-x: 14px;
-      --ui-radius: 12px;
-      --ui-title-margin: 6px;
-      --ui-title-size: 17px;
-      --ui-text-margin: 4px;
-      --ui-text-size: 13px;
-      --ui-status-top: 8px;
-      --ui-status-size: 12px;
-      --ui-gap: 8px;
-      --ui-row-top: 10px;
-      --ui-button-pad-y: 8px;
-      --ui-button-pad-x: 12px;
-      --ui-button-size: 13px;
-      --ui-hint-bottom: 18px;
-      --ui-hint-pad-y: 8px;
-      --ui-hint-pad-x: 12px;
-      --ui-hint-size: 13px;
-    }
+<script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
 
-    @media (min-width: 700px) and (min-height: 540px) {
-      :root {
-        --ui-offset: 15px;
-        --ui-width: 388px;
-        --ui-pad-y: 15px;
-        --ui-pad-x: 18px;
-        --ui-radius: 15px;
-        --ui-title-margin: 8px;
-        --ui-title-size: 21px;
-        --ui-text-margin: 5px;
-        --ui-text-size: 16px;
-        --ui-status-top: 10px;
-        --ui-status-size: 15px;
-        --ui-gap: 10px;
-        --ui-row-top: 13px;
-        --ui-button-pad-y: 10px;
-        --ui-button-pad-x: 15px;
-        --ui-button-size: 16px;
-        --ui-hint-bottom: 23px;
-        --ui-hint-pad-y: 10px;
-        --ui-hint-pad-x: 15px;
-        --ui-hint-size: 16px;
-      }
-    }
+<!-- AR.js for A-Frame -->
 
-    @media (min-width: 900px) and (min-height: 650px) {
-      :root {
-        --ui-offset: 18px;
-        --ui-width: 465px;
-        --ui-pad-y: 18px;
-        --ui-pad-x: 21px;
-        --ui-radius: 18px;
-        --ui-title-margin: 9px;
-        --ui-title-size: 26px;
-        --ui-text-margin: 6px;
-        --ui-text-size: 20px;
-        --ui-status-top: 12px;
-        --ui-status-size: 18px;
-        --ui-gap: 12px;
-        --ui-row-top: 15px;
-        --ui-button-pad-y: 12px;
-        --ui-button-pad-x: 18px;
-        --ui-button-size: 20px;
-        --ui-hint-bottom: 27px;
-        --ui-hint-pad-y: 12px;
-        --ui-hint-pad-x: 18px;
-        --ui-hint-size: 20px;
-      }
-    }
+<script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 
-    @media (min-width: 1200px) and (min-height: 800px) {
-      :root {
-        --ui-offset: 21px;
-        --ui-width: 543px;
-        --ui-pad-y: 21px;
-        --ui-pad-x: 25px;
-        --ui-radius: 21px;
-        --ui-title-margin: 11px;
-        --ui-title-size: 30px;
-        --ui-text-margin: 7px;
-        --ui-text-size: 23px;
-        --ui-status-top: 14px;
-        --ui-status-size: 21px;
-        --ui-gap: 14px;
-        --ui-row-top: 18px;
-        --ui-button-pad-y: 14px;
-        --ui-button-pad-x: 21px;
-        --ui-button-size: 23px;
-        --ui-hint-bottom: 32px;
-        --ui-hint-pad-y: 14px;
-        --ui-hint-pad-x: 21px;
-        --ui-hint-size: 23px;
-      }
-    }
 
-    html,
-    body {
-      margin: 0;
-      overflow: hidden;
-      width: 100%;
-      height: 100%;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #000;
-    }
+<style>
 
-    a-scene {
-      position: fixed;
-      inset: 0;
-      z-index: 1;
-      background: transparent !important;
-    }
+body { margin: 0; overflow: hidden; font-family: sans-serif; }
 
-    a-scene canvas,
-    .a-canvas {
-      background: transparent !important;
-    }
+#ui-overlay {
 
-    #arjs-video,
-    body > video:not(#gallery-video) {
-      z-index: 0 !important;
-      pointer-events: none !important;
-    }
+position: absolute;
 
-    #ui-overlay {
-      position: fixed;
-      left: var(--ui-offset);
-      top: var(--ui-offset);
-      z-index: 20;
-      width: min(var(--ui-width), calc(100vw - var(--ui-offset) - var(--ui-offset)));
-      padding: var(--ui-pad-y) var(--ui-pad-x);
-      border-radius: var(--ui-radius);
-      background: rgba(0, 0, 0, 0.72);
-      color: white;
-      box-sizing: border-box;
-      backdrop-filter: blur(6px);
-    }
+top: 10px;
 
-    #ui-overlay h1 {
-      margin: 0 0 var(--ui-title-margin) 0;
-      font-size: var(--ui-title-size);
-      font-weight: 700;
-    }
+left: 10px;
 
-    #ui-overlay p {
-      margin: var(--ui-text-margin) 0;
-      font-size: var(--ui-text-size);
-      line-height: 1.35;
-      color: rgba(255, 255, 255, 0.82);
-    }
+z-index: 10;
 
-    #status-line {
-      margin-top: var(--ui-status-top);
-      font-size: var(--ui-status-size);
-      color: rgba(255, 255, 255, 0.68);
-    }
+background: rgba(0, 0, 0, 0.7);
 
-    #status {
-      color: #f0d96a;
-      font-weight: 600;
-    }
+color: white;
 
-    #button-row {
-      display: flex;
-      gap: var(--ui-gap);
-      flex-wrap: wrap;
-      margin-top: var(--ui-row-top);
-      pointer-events: auto;
-    }
+padding: 15px;
 
-    button {
-      appearance: none;
-      border: 0;
-      border-radius: 999px;
-      padding: var(--ui-button-pad-y) var(--ui-button-pad-x);
-      font-size: var(--ui-button-size);
-      font-weight: 650;
-      color: #111;
-      background: white;
-      cursor: pointer;
-    }
+border-radius: 8px;
 
-    button.secondary {
-      color: white;
-      background: rgba(255, 255, 255, 0.18);
-    }
+max-width: 250px;
 
-    button:active {
-      transform: translateY(1px);
-    }
+pointer-events: none;
 
-    #hint {
-      position: fixed;
-      left: 50%;
-      bottom: var(--ui-hint-bottom);
-      transform: translateX(-50%);
-      z-index: 15;
-      padding: var(--ui-hint-pad-y) var(--ui-hint-pad-x);
-      border-radius: 999px;
-      background: rgba(0, 0, 0, 0.58);
-      color: rgba(255, 255, 255, 0.86);
-      font-size: var(--ui-hint-size);
-      text-align: center;
-      pointer-events: none;
-      white-space: nowrap;
-    }
+}
 
-    .hidden {
-      display: none;
-    }
-  </style>
+.marker-guide {
+
+border: 2px solid #00ff00;
+
+width: 150px;
+
+height: 150px;
+
+position: absolute;
+
+top: 50%;
+
+left: 50%;
+
+transform: translate(-50%, -50%);
+
+pointer-events: none;
+
+opacity: 0.5;
+
+}
+
+</style>
+
 </head>
 
 <body>
-  <div id="ui-overlay">
-    <h1>AR Video Gallery</h1>
-    <p>Point the camera at the Hiro marker.</p>
-    <p>The video starts automatically muted.</p>
 
-    <div id="button-row">
-      <button id="sound-button" class="secondary">Sound: off</button>
-      <button id="rewind-button" class="secondary">Restart</button>
-    </div>
 
-    <div id="status-line">
-      Status: <span id="status">Waiting for marker...</span>
-    </div>
-  </div>
+<!-- UI Information Overlay -->
 
-  <div id="hint">Scan the Hiro marker</div>
+<div id="ui-overlay">
 
-  <a-scene
-    embedded
-    background="transparent: true"
-    renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true; precision: mediump;"
-    vr-mode-ui="enabled: false"
-    arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;">
+<h2 style="margin-top:0">WebAR Demo</h2>
 
-    <a-assets timeout="10000">
-      <!--
-        video.mp4 must be in the same folder as this index.html.
-        Recommended encoding: MP4 / H.264 / AAC.
-      -->
-      <video
-        id="gallery-video"
-        src="./video.mp4"
-        preload="auto"
-        autoplay
-        loop
-        muted
-        playsinline
-        webkit-playsinline>
-      </video>
-    </a-assets>
+<p>1. Point your camera at a <strong>Hiro Marker</strong>.</p>
 
-    <a-marker
-      id="main-marker"
-      preset="hiro"
-      emitevents="true"
-      smooth="false">
+<p>2. A 3D interactive box will appear on top of it.</p>
 
-      <!--
-        Marker coordinates:
-        - X/Z plane = marker surface
-        - Y = height above marker
+<p style="font-size: 0.8em; color: #aaa;">Status: <span id="status">Waiting for Marker...</span></p>
 
-        The cube uses marker coordinates directly. Its bottom sits on the marker
-        surface and the video texture is mapped to the cube faces.
-      -->
-      <a-entity id="gallery-card" visible="false">
-        <a-box
-          id="video-cube"
-          width="1"
-          height="1"
-          depth="1"
-          position="0 0.5 0"
-          material="
-            src: #gallery-video;
-            shader: flat;
-            transparent: false;
-            opacity: 1;
-          ">
-        </a-box>
+</div>
 
-        <a-text
-          id="gallery-label"
-          value="Video Gallery"
-          align="center"
-          color="#ffffff"
-          width="1.2"
-          position="0 1.15 0"
-          scale="0.55 0.55 0.55">
-        </a-text>
-      </a-entity>
-    </a-marker>
 
-    <a-entity camera></a-entity>
-  </a-scene>
+<!-- Visual Guide for the User -->
 
-  <script>
-    const marker = document.querySelector("#main-marker");
-    const scene = document.querySelector("a-scene");
-    const galleryCard = document.querySelector("#gallery-card");
-    const video = document.querySelector("#gallery-video");
+<div class="marker-guide"></div>
 
-    const statusText = document.querySelector("#status");
-    const hint = document.querySelector("#hint");
 
-    const soundButton = document.querySelector("#sound-button");
-    const rewindButton = document.querySelector("#rewind-button");
+<!--
 
-    let markerVisible = false;
-    let soundEnabled = false;
+A-Scene setup:
 
-    function keepPassthroughVisible() {
-      if (!scene.renderer) return;
+- embedded: keeps it within the div/body
 
-      scene.object3D.background = null;
-      scene.renderer.setClearColor(0x000000, 0);
-      scene.renderer.domElement.style.background = "transparent";
-    }
+- arjs: initializes the AR engine
 
-    function setStatus(message, color = "#f0d96a") {
-      statusText.textContent = message;
-      statusText.style.color = color;
-    }
+- vr-mode-ui: disabled because we are using the phone screen as the view, not a headset
 
-    function syncMutedState() {
-      video.muted = !soundEnabled;
+-->
 
-      if (soundEnabled) {
-        video.removeAttribute("muted");
-      } else {
-        video.setAttribute("muted", "");
-      }
-    }
+<a-scene
 
-    async function playVideoAutomatically() {
-      syncMutedState();
-      video.playsInline = true;
+embedded
 
-      try {
-        await video.play();
-        setStatus(markerVisible ? "Playing" : "Video ready - scan marker", "#7CFF8A");
-      } catch (error) {
-        if (soundEnabled) {
-          soundEnabled = false;
-          updateSoundButton();
-          await playVideoAutomatically();
-          return;
-        }
+arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;"
 
-        setStatus("Autoplay blocked - tap Restart", "#ff7979");
-        console.warn("Video autoplay failed:", error);
-      }
-    }
+vr-mode-ui="enabled: false">
 
-    function primeAutoplay() {
-      soundEnabled = false;
-      syncMutedState();
-      video.autoplay = true;
-      video.loop = true;
-      playVideoAutomatically();
-    }
 
-    function updateSoundButton() {
-      syncMutedState();
-      soundButton.textContent = soundEnabled ? "Sound: on" : "Sound: off";
-    }
+<!-- Define the Assets (Materials, Models) -->
 
-    scene.addEventListener("renderstart", keepPassthroughVisible);
-    scene.addEventListener("loaded", keepPassthroughVisible);
+<a-assets>
 
-    video.addEventListener("ended", () => {
-      video.currentTime = 0;
-      playVideoAutomatically();
-    });
+<!--
 
-    marker.addEventListener("markerFound", () => {
-      markerVisible = true;
-      galleryCard.setAttribute("visible", "true");
-      hint.classList.add("hidden");
+FIX: Added crossorigin="anonymous" to the image tag.
 
-      playVideoAutomatically();
-    });
+This is required when loading textures from a different domain
 
-    marker.addEventListener("markerLost", () => {
-      markerVisible = false;
-      galleryCard.setAttribute("visible", "false");
-      hint.classList.remove("hidden");
+to satisfy WebGL/Three.js security policies (CORS).
 
-      setStatus("Waiting for marker...", "#f0d96a");
-    });
+-->
 
-    soundButton.addEventListener("click", async () => {
-      soundEnabled = !soundEnabled;
-      updateSoundButton();
+<img id="grid" src="https://cdn.aframe.io/a-painter/images/floor.jpg" crossorigin="anonymous">
 
-      await playVideoAutomatically();
+</a-assets>
 
-      if (!soundEnabled) {
-        setStatus(markerVisible ? "Playing muted" : "Video ready muted - scan marker", "#7CFF8A");
-      }
-    });
 
-    rewindButton.addEventListener("click", async () => {
-      video.currentTime = 0;
+<!--A-Marker: The anchor for the AR content.
 
-      await playVideoAutomatically();
-    });
+"preset: hiro" uses the standard hiro pattern.
 
-    updateSoundButton();
-    keepPassthroughVisible();
-    primeAutoplay();
-    setStatus("Waiting for marker...");
-  </script>
+-->
+
+<a-marker preset="hiro" id="main-marker">
+
+
+<!-- A 3D Box that appears when the marker is found -->
+
+<a-box
+
+position="0 0.5 0"
+
+material="src: #grid; color: #4CC3D9; transparent: true; opacity: 0.9"
+
+animation="property: rotation; to: 0 360 0; loop: true; dur: 5000; easing: linear">
+
+</a-box>
+
+
+<!-- A floating text label -->
+
+<a-text
+
+value="A-Frame AR"
+
+position="0 1.2 0"
+
+align="center"
+
+color="#FFF"
+
+scale="1.5 1.5 1.5"
+
+geometry="primitive: plane; width: 1.5; height: 0.3"
+
+material="color: #333">
+
+</a-text>
+
+
+<!-- A rotating ring around the base -->
+
+<a-ring
+
+color="#EF2D5E"
+
+radius-inner="0.6"
+
+radius-outer="0.7"
+
+rotation="-90 0 0"
+
+animation="property: scale; from: 1 1 1; to: 1.2 1.2 1.2; dir: alternate; loop: true; dur: 1000">
+
+</a-ring>
+
+
+</a-marker>
+
+
+<!-- Static camera that moves according to the marker position -->
+
+<a-entity camera></a-entity>
+
+
+</a-scene>
+
+
+<script>
+
+// Simple logic to update the UI status based on marker detection
+
+const marker = document.querySelector('#main-marker');
+
+const statusText = document.querySelector('#status');
+
+
+marker.addEventListener('markerFound', () => {
+
+statusText.innerText = "Marker Found!";
+
+statusText.style.color = "#00ff00";
+
+});
+
+
+marker.addEventListener('markerLost', () => {
+
+statusText.innerText = "Waiting for Marker...";
+
+statusText.style.color = "#aaa";
+
+});
+
+</script>
+
 </body>
+
 </html>
