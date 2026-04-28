@@ -16,6 +16,104 @@
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 
   <style>
+    :root {
+      --ui-offset: 12px;
+      --ui-width: 310px;
+      --ui-pad-y: 12px;
+      --ui-pad-x: 14px;
+      --ui-radius: 12px;
+      --ui-title-margin: 6px;
+      --ui-title-size: 17px;
+      --ui-text-margin: 4px;
+      --ui-text-size: 13px;
+      --ui-status-top: 8px;
+      --ui-status-size: 12px;
+      --ui-gap: 8px;
+      --ui-row-top: 10px;
+      --ui-button-pad-y: 8px;
+      --ui-button-pad-x: 12px;
+      --ui-button-size: 13px;
+      --ui-hint-bottom: 18px;
+      --ui-hint-pad-y: 8px;
+      --ui-hint-pad-x: 12px;
+      --ui-hint-size: 13px;
+    }
+
+    @media (min-width: 700px) and (min-height: 540px) {
+      :root {
+        --ui-offset: 15px;
+        --ui-width: 388px;
+        --ui-pad-y: 15px;
+        --ui-pad-x: 18px;
+        --ui-radius: 15px;
+        --ui-title-margin: 8px;
+        --ui-title-size: 21px;
+        --ui-text-margin: 5px;
+        --ui-text-size: 16px;
+        --ui-status-top: 10px;
+        --ui-status-size: 15px;
+        --ui-gap: 10px;
+        --ui-row-top: 13px;
+        --ui-button-pad-y: 10px;
+        --ui-button-pad-x: 15px;
+        --ui-button-size: 16px;
+        --ui-hint-bottom: 23px;
+        --ui-hint-pad-y: 10px;
+        --ui-hint-pad-x: 15px;
+        --ui-hint-size: 16px;
+      }
+    }
+
+    @media (min-width: 900px) and (min-height: 650px) {
+      :root {
+        --ui-offset: 18px;
+        --ui-width: 465px;
+        --ui-pad-y: 18px;
+        --ui-pad-x: 21px;
+        --ui-radius: 18px;
+        --ui-title-margin: 9px;
+        --ui-title-size: 26px;
+        --ui-text-margin: 6px;
+        --ui-text-size: 20px;
+        --ui-status-top: 12px;
+        --ui-status-size: 18px;
+        --ui-gap: 12px;
+        --ui-row-top: 15px;
+        --ui-button-pad-y: 12px;
+        --ui-button-pad-x: 18px;
+        --ui-button-size: 20px;
+        --ui-hint-bottom: 27px;
+        --ui-hint-pad-y: 12px;
+        --ui-hint-pad-x: 18px;
+        --ui-hint-size: 20px;
+      }
+    }
+
+    @media (min-width: 1200px) and (min-height: 800px) {
+      :root {
+        --ui-offset: 21px;
+        --ui-width: 543px;
+        --ui-pad-y: 21px;
+        --ui-pad-x: 25px;
+        --ui-radius: 21px;
+        --ui-title-margin: 11px;
+        --ui-title-size: 30px;
+        --ui-text-margin: 7px;
+        --ui-text-size: 23px;
+        --ui-status-top: 14px;
+        --ui-status-size: 21px;
+        --ui-gap: 14px;
+        --ui-row-top: 18px;
+        --ui-button-pad-y: 14px;
+        --ui-button-pad-x: 21px;
+        --ui-button-size: 23px;
+        --ui-hint-bottom: 32px;
+        --ui-hint-pad-y: 14px;
+        --ui-hint-pad-x: 21px;
+        --ui-hint-size: 23px;
+      }
+    }
+
     html,
     body {
       margin: 0;
@@ -46,12 +144,12 @@
 
     #ui-overlay {
       position: fixed;
-      left: 12px;
-      top: 12px;
+      left: var(--ui-offset);
+      top: var(--ui-offset);
       z-index: 20;
-      width: min(310px, calc(100vw - 24px));
-      padding: 12px 14px;
-      border-radius: 12px;
+      width: min(var(--ui-width), calc(100vw - var(--ui-offset) - var(--ui-offset)));
+      padding: var(--ui-pad-y) var(--ui-pad-x);
+      border-radius: var(--ui-radius);
       background: rgba(0, 0, 0, 0.72);
       color: white;
       box-sizing: border-box;
@@ -59,21 +157,21 @@
     }
 
     #ui-overlay h1 {
-      margin: 0 0 6px 0;
-      font-size: 17px;
+      margin: 0 0 var(--ui-title-margin) 0;
+      font-size: var(--ui-title-size);
       font-weight: 700;
     }
 
     #ui-overlay p {
-      margin: 4px 0;
-      font-size: 13px;
+      margin: var(--ui-text-margin) 0;
+      font-size: var(--ui-text-size);
       line-height: 1.35;
       color: rgba(255, 255, 255, 0.82);
     }
 
     #status-line {
-      margin-top: 8px;
-      font-size: 12px;
+      margin-top: var(--ui-status-top);
+      font-size: var(--ui-status-size);
       color: rgba(255, 255, 255, 0.68);
     }
 
@@ -84,9 +182,9 @@
 
     #button-row {
       display: flex;
-      gap: 8px;
+      gap: var(--ui-gap);
       flex-wrap: wrap;
-      margin-top: 10px;
+      margin-top: var(--ui-row-top);
       pointer-events: auto;
     }
 
@@ -94,8 +192,8 @@
       appearance: none;
       border: 0;
       border-radius: 999px;
-      padding: 8px 12px;
-      font-size: 13px;
+      padding: var(--ui-button-pad-y) var(--ui-button-pad-x);
+      font-size: var(--ui-button-size);
       font-weight: 650;
       color: #111;
       background: white;
@@ -114,14 +212,14 @@
     #hint {
       position: fixed;
       left: 50%;
-      bottom: 18px;
+      bottom: var(--ui-hint-bottom);
       transform: translateX(-50%);
       z-index: 15;
-      padding: 8px 12px;
+      padding: var(--ui-hint-pad-y) var(--ui-hint-pad-x);
       border-radius: 999px;
       background: rgba(0, 0, 0, 0.58);
       color: rgba(255, 255, 255, 0.86);
-      font-size: 13px;
+      font-size: var(--ui-hint-size);
       text-align: center;
       pointer-events: none;
       white-space: nowrap;
@@ -137,11 +235,10 @@
   <div id="ui-overlay">
     <h1>AR Video Gallery</h1>
     <p>Point the camera at the Hiro marker.</p>
-    <p>Tap once to enable video playback on mobile browsers.</p>
+    <p>The video starts automatically muted.</p>
 
     <div id="button-row">
-      <button id="enable-video-button">Enable video</button>
-      <button id="sound-button" class="secondary">Sound: on</button>
+      <button id="sound-button" class="secondary">Sound: off</button>
       <button id="rewind-button" class="secondary">Restart</button>
     </div>
 
@@ -168,7 +265,9 @@
         id="gallery-video"
         src="./video.mp4"
         preload="auto"
+        autoplay
         loop
+        muted
         playsinline
         webkit-playsinline>
       </video>
@@ -185,28 +284,23 @@
         - X/Z plane = marker surface
         - Y = height above marker
 
-        The video plane uses marker coordinates directly:
-        - centered at marker origin
-        - Y offset keeps it above the physical marker surface
-        - rotation lays the fixed-size plane flat over the marker
+        The cube uses marker coordinates directly. Its bottom sits on the marker
+        surface and the video texture is mapped to the cube faces.
       -->
       <a-entity id="gallery-card" visible="false">
-        <!-- Fixed marker-space video surface. Width/height are set once from the video file. -->
-        <a-plane
-          id="video-surface"
-          geometry="primitive: plane; width: 2; height: 1.125"
-          position="0 0.07 0"
-          rotation="-90 0 0"
+        <a-box
+          id="video-cube"
+          width="1"
+          height="1"
+          depth="1"
+          position="0 0.5 0"
           material="
             src: #gallery-video;
             shader: flat;
-            side: double;
             transparent: false;
             opacity: 1;
-            depthTest: false;
-            depthWrite: false;
           ">
-        </a-plane>
+        </a-box>
 
         <a-text
           id="gallery-label"
@@ -214,8 +308,7 @@
           align="center"
           color="#ffffff"
           width="1.2"
-          position="0 0.075 0.76"
-          rotation="-90 0 0"
+          position="0 1.15 0"
           scale="0.55 0.55 0.55">
         </a-text>
       </a-entity>
@@ -229,25 +322,15 @@
     const scene = document.querySelector("a-scene");
     const galleryCard = document.querySelector("#gallery-card");
     const video = document.querySelector("#gallery-video");
-    const videoSurface = document.querySelector("#video-surface");
-    const galleryLabel = document.querySelector("#gallery-label");
 
     const statusText = document.querySelector("#status");
     const hint = document.querySelector("#hint");
 
-    const enableVideoButton = document.querySelector("#enable-video-button");
     const soundButton = document.querySelector("#sound-button");
     const rewindButton = document.querySelector("#rewind-button");
 
     let markerVisible = false;
-    let videoEnabled = false;
-    let soundEnabled = true;
-    let lockedVideoAspect = null;
-
-    const VIDEO_TARGET_WIDTH = 2.0;
-    const VIDEO_TARGET_HEIGHT = 2.828;
-    const VIDEO_SURFACE_Y = 0.07;
-    const LABEL_GAP = 0.14;
+    let soundEnabled = false;
 
     function keepPassthroughVisible() {
       if (!scene.renderer) return;
@@ -262,119 +345,55 @@
       statusText.style.color = color;
     }
 
-    function getLockedVideoAspect() {
-      if (lockedVideoAspect) return lockedVideoAspect;
-      if (!video.videoWidth || !video.videoHeight) return null;
+    function syncMutedState() {
+      video.muted = !soundEnabled;
 
-      lockedVideoAspect = video.videoWidth / video.videoHeight;
-      return lockedVideoAspect;
+      if (soundEnabled) {
+        video.removeAttribute("muted");
+      } else {
+        video.setAttribute("muted", "");
+      }
     }
 
-    function sizeVideoSurface() {
-      const aspect = getLockedVideoAspect();
-      if (!aspect) return;
-
-      let width = VIDEO_TARGET_WIDTH;
-      let height = width / aspect;
-
-      if (height > VIDEO_TARGET_HEIGHT) {
-        height = VIDEO_TARGET_HEIGHT;
-        width = height * aspect;
-      }
-
-      videoSurface.setAttribute("geometry", {
-        primitive: "plane",
-        width: width.toFixed(4),
-        height: height.toFixed(4)
-      });
-      videoSurface.setAttribute("position", `0 ${VIDEO_SURFACE_Y} 0`);
-      videoSurface.setAttribute("rotation", "-90 0 0");
-
-      galleryLabel.setAttribute("position", `0 ${VIDEO_SURFACE_Y + 0.005} ${(height / 2 + LABEL_GAP).toFixed(4)}`);
-      galleryLabel.setAttribute("rotation", "-90 0 0");
-    }
-
-    async function tryPlayVideo() {
-      if (!videoEnabled) {
-        setStatus("Tap Enable video first", "#f0d96a");
-        return;
-      }
+    async function playVideoAutomatically() {
+      syncMutedState();
+      video.playsInline = true;
 
       try {
         await video.play();
-        setStatus("Playing", "#7CFF8A");
+        setStatus(markerVisible ? "Playing" : "Video ready - scan marker", "#7CFF8A");
       } catch (error) {
-        setStatus("Playback blocked - tap Enable video again", "#ff7979");
-        console.warn("Video play failed:", error);
-      }
-    }
-
-    function pauseVideo() {
-      video.pause();
-      setStatus("Marker lost - paused", "#f0d96a");
-    }
-
-    async function enableVideoPlayback() {
-      /*
-        Mobile browsers usually require a user gesture before video playback,
-        especially if audio is enabled. This button performs that gesture.
-      */
-      try {
-        video.muted = !soundEnabled;
-        await video.play();
-
-        videoEnabled = true;
-
-        if (!markerVisible) {
-          video.pause();
-        }
-
-        setStatus(markerVisible ? "Playing" : "Video enabled - scan marker", "#7CFF8A");
-
-        if (!markerVisible) {
-          video.currentTime = 0;
-        }
-      } catch (errorWithSound) {
-        /*
-          If playback with sound is blocked, fall back to muted playback.
-          The user can still try Sound: on afterwards.
-        */
-        try {
+        if (soundEnabled) {
           soundEnabled = false;
-          video.muted = true;
-          soundButton.textContent = "Sound: off";
-
-          await video.play();
-          videoEnabled = true;
-
-          if (!markerVisible) {
-            video.pause();
-            video.currentTime = 0;
-          }
-
-          setStatus("Video enabled muted - scan marker", "#7CFF8A");
-        } catch (errorMuted) {
-          setStatus("Could not enable video", "#ff7979");
-          console.warn("Video enable failed:", errorMuted);
+          updateSoundButton();
+          await playVideoAutomatically();
+          return;
         }
+
+        setStatus("Autoplay blocked - tap Restart", "#ff7979");
+        console.warn("Video autoplay failed:", error);
       }
+    }
+
+    function primeAutoplay() {
+      soundEnabled = false;
+      syncMutedState();
+      video.autoplay = true;
+      video.loop = true;
+      playVideoAutomatically();
     }
 
     function updateSoundButton() {
-      video.muted = !soundEnabled;
+      syncMutedState();
       soundButton.textContent = soundEnabled ? "Sound: on" : "Sound: off";
     }
 
     scene.addEventListener("renderstart", keepPassthroughVisible);
     scene.addEventListener("loaded", keepPassthroughVisible);
 
-    video.addEventListener("loadedmetadata", sizeVideoSurface);
-
     video.addEventListener("ended", () => {
       video.currentTime = 0;
-      if (markerVisible && videoEnabled) {
-        tryPlayVideo();
-      }
+      playVideoAutomatically();
     });
 
     marker.addEventListener("markerFound", () => {
@@ -382,11 +401,7 @@
       galleryCard.setAttribute("visible", "true");
       hint.classList.add("hidden");
 
-      if (videoEnabled) {
-        tryPlayVideo();
-      } else {
-        setStatus("Marker found - tap Enable video", "#7CFF8A");
-      }
+      playVideoAutomatically();
     });
 
     marker.addEventListener("markerLost", () => {
@@ -394,37 +409,29 @@
       galleryCard.setAttribute("visible", "false");
       hint.classList.remove("hidden");
 
-      if (!video.paused) {
-        pauseVideo();
-      } else {
-        setStatus("Waiting for marker...", "#f0d96a");
-      }
+      setStatus("Waiting for marker...", "#f0d96a");
     });
-
-    enableVideoButton.addEventListener("click", enableVideoPlayback);
 
     soundButton.addEventListener("click", async () => {
       soundEnabled = !soundEnabled;
       updateSoundButton();
 
-      if (markerVisible && videoEnabled) {
-        await tryPlayVideo();
+      await playVideoAutomatically();
+
+      if (!soundEnabled) {
+        setStatus(markerVisible ? "Playing muted" : "Video ready muted - scan marker", "#7CFF8A");
       }
     });
 
     rewindButton.addEventListener("click", async () => {
       video.currentTime = 0;
 
-      if (markerVisible && videoEnabled) {
-        await tryPlayVideo();
-      } else {
-        setStatus("Restarted - scan marker", "#f0d96a");
-      }
+      await playVideoAutomatically();
     });
 
     updateSoundButton();
-    sizeVideoSurface();
     keepPassthroughVisible();
+    primeAutoplay();
     setStatus("Waiting for marker...");
   </script>
 </body>
