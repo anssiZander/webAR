@@ -120,17 +120,16 @@ vr-mode-ui="enabled: false">
 
 <a-assets>
 
-<!--
-
-FIX: Added crossorigin="anonymous" to the image tag.
-
-This is required when loading textures from a different domain
-
-to satisfy WebGL/Three.js security policies (CORS).
-
--->
-
-<img id="grid" src="https://cdn.aframe.io/a-painter/images/floor.jpg" crossorigin="anonymous">
+<video
+id="cube-video"
+src="./video.mp4"
+preload="auto"
+autoplay
+loop
+muted
+playsinline
+webkit-playsinline>
+</video>
 
 </a-assets>
 
@@ -150,32 +149,9 @@ to satisfy WebGL/Three.js security policies (CORS).
 
 position="0 0.5 0"
 
-material="src: #grid; color: #4CC3D9; transparent: true; opacity: 0.9"
-
-animation="property: rotation; to: 0 360 0; loop: true; dur: 5000; easing: linear">
+material="src: #cube-video; shader: flat; color: #FFFFFF; transparent: false; opacity: 1">
 
 </a-box>
-
-
-<!-- A floating text label -->
-
-<a-text
-
-value="A-Frame AR"
-
-position="0 1.2 0"
-
-align="center"
-
-color="#FFF"
-
-scale="1.5 1.5 1.5"
-
-geometry="primitive: plane; width: 1.5; height: 0.3"
-
-material="color: #333">
-
-</a-text>
 
 
 <!-- A rotating ring around the base -->
@@ -214,12 +190,29 @@ const marker = document.querySelector('#main-marker');
 
 const statusText = document.querySelector('#status');
 
+const cubeVideo = document.querySelector('#cube-video');
+
+
+function playCubeVideo() {
+
+cubeVideo.muted = true;
+
+cubeVideo.play().catch((error) => {
+
+console.warn('Video playback was blocked:', error);
+
+});
+
+}
+
 
 marker.addEventListener('markerFound', () => {
 
 statusText.innerText = "Marker Found!";
 
 statusText.style.color = "#00ff00";
+
+playCubeVideo();
 
 });
 
@@ -231,6 +224,9 @@ statusText.innerText = "Waiting for Marker...";
 statusText.style.color = "#aaa";
 
 });
+
+
+playCubeVideo();
 
 </script>
 
