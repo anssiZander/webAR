@@ -40,12 +40,8 @@
 
     #arjs-video,
     body > video:not(#gallery-video) {
-      position: fixed !important;
-      inset: 0 !important;
-      width: 100vw !important;
-      height: 100vh !important;
-      object-fit: cover !important;
       z-index: 0 !important;
+      pointer-events: none !important;
     }
 
     #ui-overlay {
@@ -182,33 +178,27 @@
       id="main-marker"
       preset="hiro"
       emitevents="true"
-      smooth="true"
-      smoothCount="5"
-      smoothTolerance="0.01"
-      smoothThreshold="2">
+      smooth="false">
 
       <!--
         Marker coordinates:
         - X/Z plane = marker surface
         - Y = height above marker
 
-        The card entity is rotated so its local XY plane lies flat over the marker.
-        The video plane is intentionally larger than the marker paper.
+        The video plane uses marker coordinates directly:
+        - centered at marker origin
+        - Y offset keeps it above the physical marker surface
+        - rotation lays the fixed-size plane flat over the marker
       -->
-      <a-entity
-        id="gallery-card"
-        position="0 0.035 0"
-        rotation="-90 0 0"
-        visible="false">
-
-        <!-- Video surface; JS will resize this to preserve the actual video aspect ratio. -->
-        <a-video
+      <a-entity id="gallery-card" visible="false">
+        <!-- Fixed marker-space video surface. Width/height are set once from the video file. -->
+        <a-plane
           id="video-surface"
-          src="#gallery-video"
-          width="2"
-          height="1.125"
-          position="0 0 0.035"
+          geometry="primitive: plane; width: 2; height: 1.125"
+          position="0 0.07 0"
+          rotation="-90 0 0"
           material="
+            src: #gallery-video;
             shader: flat;
             side: double;
             transparent: false;
@@ -216,7 +206,7 @@
             depthTest: false;
             depthWrite: false;
           ">
-        </a-video>
+        </a-plane>
 
         <a-text
           id="gallery-label"
@@ -224,7 +214,8 @@
           align="center"
           color="#ffffff"
           width="1.2"
-          position="0 -0.76 0.04"
+          position="0 0.075 0.76"
+          rotation="-90 0 0"
           scale="0.55 0.55 0.55">
         </a-text>
       </a-entity>
@@ -251,10 +242,11 @@
     let markerVisible = false;
     let videoEnabled = false;
     let soundEnabled = true;
+    let lockedVideoAspect = null;
 
     const VIDEO_TARGET_WIDTH = 2.0;
     const VIDEO_TARGET_HEIGHT = 2.828;
-    const VIDEO_SURFACE_Z = 0.035;
+    const VIDEO_SURFACE_Y = 0.07;
     const LABEL_GAP = 0.14;
 
     function keepPassthroughVisible() {
@@ -270,10 +262,17 @@
       statusText.style.color = color;
     }
 
+    function getLockedVideoAspect() {
+      if (lockedVideoAspect) return lockedVideoAspect;
+      if (!video.videoWidth || !video.videoHeight) return null;
+
+      lockedVideoAspect = video.videoWidth / video.videoHeight;
+      return lockedVideoAspect;
+    }
+
     function sizeVideoSurface() {
-      const videoWidth = video.videoWidth || 16;
-      const videoHeight = video.videoHeight || 9;
-      const aspect = videoWidth / videoHeight;
+      const aspect = getLockedVideoAspect();
+      if (!aspect) return;
 
       let width = VIDEO_TARGET_WIDTH;
       let height = width / aspect;
@@ -283,10 +282,16 @@
         width = height * aspect;
       }
 
-      videoSurface.setAttribute("width", width.toFixed(4));
-      videoSurface.setAttribute("height", height.toFixed(4));
-      videoSurface.setAttribute("position", `0 0 ${VIDEO_SURFACE_Z}`);
-      galleryLabel.setAttribute("position", `0 ${(-height / 2 - LABEL_GAP).toFixed(4)} 0.04`);
+      videoSurface.setAttribute("geometry", {
+        primitive: "plane",
+        width: width.toFixed(4),
+        height: height.toFixed(4)
+      });
+      videoSurface.setAttribute("position", `0 ${VIDEO_SURFACE_Y} 0`);
+      videoSurface.setAttribute("rotation", "-90 0 0");
+
+      galleryLabel.setAttribute("position", `0 ${VIDEO_SURFACE_Y + 0.005} ${(height / 2 + LABEL_GAP).toFixed(4)}`);
+      galleryLabel.setAttribute("rotation", "-90 0 0");
     }
 
     async function tryPlayVideo() {
