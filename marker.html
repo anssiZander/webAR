@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hiro Marker</title>
+    <title>WebAR Markers</title>
     <style>
       body {
         margin: 0;
@@ -24,6 +24,10 @@
 
       h1 {
         margin-top: 0;
+      }
+
+      h2 {
+        margin-top: 32px;
       }
 
       p {
@@ -63,14 +67,24 @@
   </head>
   <body>
     <main>
-      <h1>Hiro Marker</h1>
+      <h1>WebAR Markers</h1>
       <p>
-        Show this marker on another screen or print it, then point the AR demo
-        camera at it.
+        Show either marker on another screen or print them. The Hiro marker and
+        the QR marker both spawn the same video cube. If both are visible, two
+        cubes can appear at once.
       </p>
+      <h2>Hiro marker</h2>
       <img
         src="./hiro.png"
         alt="Hiro marker"
+      />
+      <h2>QR marker</h2>
+      <p>
+        This QR code opens the GitHub Pages site and also works as an AR marker.
+      </p>
+      <img
+        src="./github-pages-qr-marker.jpg"
+        alt="QR marker for the WebAR demo"
       />
       <p>Keep the marker flat, well lit, and large enough to fill the guide box.</p>
       <p class="no-print"><a href="./index.html">Back to demo</a></p>
