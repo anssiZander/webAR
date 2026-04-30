@@ -105,6 +105,159 @@ this.el.removeObject3D('mesh');
 
 });
 
+AFRAME.registerComponent('hologram-torus', {
+
+schema: {
+
+size: { type: 'number', default: 2 },
+
+color: { type: 'color', default: '#42F5FF' }
+
+},
+
+init() {
+
+const data = this.data;
+
+const geometry = new THREE.BoxGeometry(data.size, data.size, data.size);
+
+const material = new THREE.ShaderMaterial({
+
+transparent: true,
+
+depthWrite: false,
+
+blending: THREE.AdditiveBlending,
+
+side: THREE.FrontSide,
+
+uniforms: {
+
+time: { value: 0 },
+
+halfSize: { value: data.size / 2 },
+
+cameraLocalPosition: { value: new THREE.Vector3(0, 0, 4) },
+
+hologramColor: { value: new THREE.Color(data.color) }
+
+},
+
+vertexShader: `
+varying vec3 vLocalPosition;
+
+void main() {
+  vLocalPosition = position;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`,
+
+fragmentShader: `
+precision highp float;
+
+uniform float time;
+uniform float halfSize;
+uniform vec3 cameraLocalPosition;
+uniform vec3 hologramColor;
+
+varying vec3 vLocalPosition;
+
+float sdTorus(vec3 p, vec2 torus) {
+  vec2 q = vec2(length(p.xz) - torus.x, p.y);
+  return length(q) - torus.y;
+}
+
+mat2 rotate2d(float angle) {
+  float s = sin(angle);
+  float c = cos(angle);
+  return mat2(c, -s, s, c);
+}
+
+float mapScene(vec3 p) {
+  p.xz = rotate2d(time * 0.65) * p.xz;
+  p.xy = rotate2d(time * 0.28) * p.xy;
+  return sdTorus(p, vec2(halfSize * 0.48, halfSize * 0.16));
+}
+
+void main() {
+  vec3 ro = cameraLocalPosition;
+  vec3 rd = normalize(vLocalPosition - ro);
+  vec3 p = vLocalPosition + rd * 0.015;
+
+  float rayDistance = 0.0;
+  float glow = 0.0;
+  float hit = 0.0;
+
+  for (int i = 0; i < 72; i++) {
+    vec3 samplePoint = p + rd * rayDistance;
+
+    if (max(max(abs(samplePoint.x), abs(samplePoint.y)), abs(samplePoint.z)) > halfSize * 1.15) {
+      break;
+    }
+
+    float d = mapScene(samplePoint);
+    glow += 0.018 / (0.035 + abs(d));
+
+    if (d < 0.008) {
+      hit = 1.0;
+      break;
+    }
+
+    rayDistance += clamp(abs(d) * 0.72, 0.018, 0.085);
+  }
+
+  float scanline = 0.62 + 0.38 * sin((vLocalPosition.y + time * 0.55) * 34.0);
+  float grid = smoothstep(0.985, 1.0, max(max(abs(vLocalPosition.x), abs(vLocalPosition.y)), abs(vLocalPosition.z)) / halfSize);
+  float intensity = clamp(hit * 1.2 + glow * 0.05 + grid * 0.18, 0.0, 1.0);
+  float alpha = clamp(intensity * scanline, 0.0, 0.82);
+
+  if (alpha < 0.025) {
+    discard;
+  }
+
+  vec3 color = hologramColor * (0.55 + intensity * 1.8);
+  gl_FragColor = vec4(color, alpha);
+}
+`
+
+});
+
+const mesh = new THREE.Mesh(geometry, material);
+
+this.material = material;
+
+this.el.setObject3D('mesh', mesh);
+
+},
+
+tick(time) {
+
+if (!this.material) return;
+
+const camera = this.el.sceneEl.camera;
+
+if (camera) {
+
+const cameraWorldPosition = new THREE.Vector3();
+
+camera.getWorldPosition(cameraWorldPosition);
+
+this.material.uniforms.cameraLocalPosition.value.copy(this.el.object3D.worldToLocal(cameraWorldPosition));
+
+}
+
+this.material.uniforms.time.value = time / 1000;
+
+},
+
+remove() {
+
+this.el.removeObject3D('mesh');
+
+}
+
+});
+
 </script>
 
 
@@ -171,9 +324,9 @@ opacity: 0.5;
 
 <h2 style="margin-top:0">WebAR Demo</h2>
 
-<p>1. Point your camera at a <strong>Hiro marker</strong> or <strong>Barcode marker #5</strong>.</p>
+<p>1. Point your camera at a <strong>Hiro marker</strong>, <strong>Barcode marker #5</strong>, or <strong>Kanji marker</strong>.</p>
 
-<p>2. The Hiro marker shows the video cube. Barcode #5 shows a larger trefoil knot.</p>
+<p>2. Hiro shows the video cube. Barcode #5 shows a trefoil knot. Kanji shows a hologram torus.</p>
 
 <p style="font-size: 0.8em; color: #aaa;">Status: <span id="status">Waiting for Marker...</span></p>
 
@@ -274,6 +427,23 @@ animation="property: scale; from: 1 1 1; to: 1.2 1.2 1.2; dir: alternate; loop: 
 position="0 0 0"
 
 trefoil-knot="size: 2; tubeRadius: 0.16; color: #F5B642">
+
+</a-entity>
+
+
+</a-marker>
+
+
+<a-marker preset="kanji" id="kanji-marker">
+
+
+<!-- A shader cube volume that raymarches a hologram torus on the Kanji marker -->
+
+<a-entity
+
+position="0 1 0"
+
+hologram-torus="size: 2; color: #42F5FF">
 
 </a-entity>
 
