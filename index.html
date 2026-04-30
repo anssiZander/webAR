@@ -81,13 +81,27 @@ const centerZ = (normalizedBox.min.z + normalizedBox.max.z) / 2;
 
 geometry.translate(-centerX, -normalizedBox.min.y, -centerZ);
 
-const material = new THREE.MeshStandardMaterial({
+const material = new THREE.MeshPhysicalMaterial({
 
 color: data.color,
 
-roughness: 0.38,
+transparent: true,
 
-metalness: 0.18
+opacity: 0.45,
+
+roughness: 0.04,
+
+metalness: 0.0,
+
+transmission: 0.65,
+
+thickness: 0.6,
+
+clearcoat: 1.0,
+
+clearcoatRoughness: 0.08,
+
+ior: 1.45
 
 });
 
@@ -207,15 +221,14 @@ void main() {
   }
 
   float scanline = 0.62 + 0.38 * sin((vLocalPosition.y + time * 0.55) * 34.0);
-  float grid = smoothstep(0.985, 1.0, max(max(abs(vLocalPosition.x), abs(vLocalPosition.y)), abs(vLocalPosition.z)) / halfSize);
-  float intensity = clamp(hit * 1.2 + glow * 0.05 + grid * 0.18, 0.0, 1.0);
-  float alpha = clamp(intensity * scanline, 0.0, 0.82);
+  float intensity = clamp(hit * 1.55 + glow * 0.09, 0.0, 1.0);
+  float alpha = clamp(intensity * scanline, 0.0, 0.95);
 
   if (alpha < 0.025) {
     discard;
   }
 
-  vec3 color = hologramColor * (0.55 + intensity * 1.8);
+  vec3 color = hologramColor * (0.5 + intensity * 1.55);
   gl_FragColor = vec4(color, alpha);
 }
 `
@@ -426,7 +439,7 @@ animation="property: scale; from: 1 1 1; to: 1.2 1.2 1.2; dir: alternate; loop: 
 
 position="0 0 0"
 
-trefoil-knot="size: 2; tubeRadius: 0.16; color: #F5B642">
+trefoil-knot="size: 2; tubeRadius: 0.32; color: #BFEFFF">
 
 </a-entity>
 
@@ -441,9 +454,9 @@ trefoil-knot="size: 2; tubeRadius: 0.16; color: #F5B642">
 
 <a-entity
 
-position="0 1 0"
+position="0 2 0"
 
-hologram-torus="size: 2; color: #42F5FF">
+hologram-torus="size: 4; color: #00B85C">
 
 </a-entity>
 
