@@ -81,9 +81,9 @@ opacity: 0.5;
 
 <h2 style="margin-top:0">WebAR Demo</h2>
 
-<p>1. Point your camera at a <strong>Hiro marker</strong> or the <strong>QR marker</strong>.</p>
+<p>1. Point your camera at a <strong>Hiro Marker</strong>.</p>
 
-<p>2. A video cube will appear on top of each visible marker.</p>
+<p>2. A 3D interactive box will appear on top of it.</p>
 
 <p style="font-size: 0.8em; color: #aaa;">Status: <span id="status">Waiting for Marker...</span></p>
 
@@ -134,28 +134,16 @@ webkit-playsinline>
 </a-assets>
 
 
-<!--A-Markers: anchors for the AR content. -->
+<!--A-Marker: The anchor for the AR content.
 
-<a-marker preset="hiro" id="hiro-marker">
+"preset: hiro" uses the standard hiro pattern.
 
+-->
 
-<!-- A video cube that appears when the Hiro marker is found -->
-
-<a-box
-
-position="0 0.5 0"
-
-material="src: #cube-video; shader: flat; color: #FFFFFF; transparent: false; opacity: 1">
-
-</a-box>
+<a-marker preset="hiro" id="main-marker">
 
 
-</a-marker>
-
-<a-marker type="pattern" url="./github-pages-qr.patt" patternRatio="0.5" id="qr-marker">
-
-
-<!-- A video cube that appears when the QR marker is found -->
+<!-- A 3D Box that appears when the marker is found -->
 
 <a-box
 
@@ -164,6 +152,23 @@ position="0 0.5 0"
 material="src: #cube-video; shader: flat; color: #FFFFFF; transparent: false; opacity: 1">
 
 </a-box>
+
+
+<!-- A rotating ring around the base -->
+
+<a-ring
+
+color="#EF2D5E"
+
+radius-inner="0.6"
+
+radius-outer="0.7"
+
+rotation="-90 0 0"
+
+animation="property: scale; from: 1 1 1; to: 1.2 1.2 1.2; dir: alternate; loop: true; dur: 1000">
+
+</a-ring>
 
 
 </a-marker>
@@ -181,13 +186,11 @@ material="src: #cube-video; shader: flat; color: #FFFFFF; transparent: false; op
 
 // Simple logic to update the UI status based on marker detection
 
-const markers = document.querySelectorAll('a-marker');
+const marker = document.querySelector('#main-marker');
 
 const statusText = document.querySelector('#status');
 
 const cubeVideo = document.querySelector('#cube-video');
-
-const visibleMarkers = new Set();
 
 
 function playCubeVideo() {
@@ -203,13 +206,9 @@ console.warn('Video playback was blocked:', error);
 }
 
 
-markers.forEach((marker) => {
-
 marker.addEventListener('markerFound', () => {
 
-visibleMarkers.add(marker.id);
-
-statusText.innerText = visibleMarkers.size === 1 ? "1 Marker Found!" : `${visibleMarkers.size} Markers Found!`;
+statusText.innerText = "Marker Found!";
 
 statusText.style.color = "#00ff00";
 
@@ -220,13 +219,9 @@ playCubeVideo();
 
 marker.addEventListener('markerLost', () => {
 
-visibleMarkers.delete(marker.id);
+statusText.innerText = "Waiting for Marker...";
 
-statusText.innerText = visibleMarkers.size === 0 ? "Waiting for Marker..." : `${visibleMarkers.size} Marker Still Found!`;
-
-statusText.style.color = visibleMarkers.size === 0 ? "#aaa" : "#00ff00";
-
-});
+statusText.style.color = "#aaa";
 
 });
 
