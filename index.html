@@ -615,15 +615,21 @@ loop>
 <a-marker preset="hiro" id="main-marker">
 
 
-<!-- A 3D Box that appears when the marker is found -->
+<!-- A 2D Plane that appears when the marker is found -->
 
-<a-box
+<a-plane
 
-position="0 0.5 0"
+position="0 0 0"
+
+rotation="-90 0 0"
+
+width="2"
+
+height="2"
 
 material="src: #cube-video; shader: flat; color: #FFFFFF; transparent: false; opacity: 1">
 
-</a-box>
+</a-plane>
 
 <a-text
 
