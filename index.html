@@ -81,27 +81,17 @@ const centerZ = (normalizedBox.min.z + normalizedBox.max.z) / 2;
 
 geometry.translate(-centerX, -normalizedBox.min.y, -centerZ);
 
-const material = new THREE.MeshPhysicalMaterial({
+const material = new THREE.MeshStandardMaterial({
 
 color: data.color,
 
-transparent: false,
+roughness: 0.18,
 
-opacity: 1,
+metalness: 0.85,
 
-roughness: 0.12,
+emissive: new THREE.Color('#4A3300'),
 
-metalness: 1.0,
-
-transmission: 0.0,
-
-thickness: 0.0,
-
-clearcoat: 1.0,
-
-clearcoatRoughness: 0.08,
-
-ior: 1.45
+emissiveIntensity: 0.25
 
 });
 
@@ -193,14 +183,23 @@ float mapScene(vec3 p) {
   return sdTorus(p, vec2(halfSize * 0.48, halfSize * 0.16));
 }
 
+vec3 estimateNormal(vec3 p) {
+  vec2 e = vec2(0.006, 0.0);
+  return normalize(vec3(
+    mapScene(p + e.xyy) - mapScene(p - e.xyy),
+    mapScene(p + e.yxy) - mapScene(p - e.yxy),
+    mapScene(p + e.yyx) - mapScene(p - e.yyx)
+  ));
+}
+
 void main() {
   vec3 ro = cameraLocalPosition;
   vec3 rd = normalize(vLocalPosition - ro);
   vec3 p = vLocalPosition + rd * 0.015;
 
   float rayDistance = 0.0;
-  float glow = 0.0;
   float hit = 0.0;
+  vec3 hitPoint = vec3(0.0);
 
   for (int i = 0; i < 72; i++) {
     vec3 samplePoint = p + rd * rayDistance;
@@ -210,20 +209,25 @@ void main() {
     }
 
     float d = mapScene(samplePoint);
-    glow += 0.018 / (0.035 + abs(d));
 
     if (d < 0.008) {
       hit = 1.0;
+      hitPoint = samplePoint;
       break;
     }
 
     rayDistance += clamp(abs(d) * 0.72, 0.018, 0.085);
   }
 
-  float intensity = clamp(hit * 1.4 + glow * 0.075, 0.0, 1.0);
+  vec3 normalColor = vec3(0.0);
+
+  if (hit > 0.5) {
+    vec3 normal = estimateNormal(hitPoint);
+    normalColor = normal * 0.5 + 0.5;
+  }
+
   vec3 blackWindow = vec3(0.0);
-  vec3 torusColor = hologramColor * (0.3 + intensity * 1.45);
-  vec3 color = mix(blackWindow, torusColor, intensity);
+  vec3 color = mix(blackWindow, normalColor, hit);
   gl_FragColor = vec4(color, 1.0);
 }
 `
@@ -382,6 +386,13 @@ playsinline
 webkit-playsinline>
 </video>
 
+<audio
+id="background-music"
+src="./Another%20World.mp3"
+preload="auto"
+loop>
+</audio>
+
 </a-assets>
 
 
@@ -434,7 +445,7 @@ animation="property: scale; from: 1 1 1; to: 1.2 1.2 1.2; dir: alternate; loop: 
 
 position="0 0 0"
 
-trefoil-knot="size: 2; tubeRadius: 0.32; color: #B8C7D6">
+trefoil-knot="size: 2; tubeRadius: 0.32; color: #D4AF37">
 
 </a-entity>
 
@@ -449,9 +460,9 @@ trefoil-knot="size: 2; tubeRadius: 0.32; color: #B8C7D6">
 
 <a-entity
 
-position="0 2 0"
+position="0 1 0"
 
-hologram-torus="size: 4; color: #00B85C">
+hologram-torus="size: 2; color: #00B85C">
 
 </a-entity>
 
@@ -477,6 +488,8 @@ const statusText = document.querySelector('#status');
 
 const cubeVideo = document.querySelector('#cube-video');
 
+const backgroundMusic = document.querySelector('#background-music');
+
 const visibleMarkers = new Set();
 
 
@@ -489,6 +502,28 @@ cubeVideo.play().catch((error) => {
 console.warn('Video playback was blocked:', error);
 
 });
+
+}
+
+
+function playBackgroundMusic() {
+
+backgroundMusic.volume = 0.2;
+
+backgroundMusic.play().catch((error) => {
+
+console.warn('Background music playback was blocked:', error);
+
+});
+
+}
+
+
+function retryBackgroundMusicOnGesture() {
+
+if (!backgroundMusic.paused) return;
+
+playBackgroundMusic();
 
 }
 
@@ -522,6 +557,12 @@ statusText.style.color = visibleMarkers.size === 0 ? "#aaa" : "#00ff00";
 
 
 playCubeVideo();
+
+playBackgroundMusic();
+
+window.addEventListener('pointerdown', retryBackgroundMusicOnGesture, { once: true });
+
+window.addEventListener('touchstart', retryBackgroundMusicOnGesture, { once: true });
 
 </script>
 
