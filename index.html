@@ -105,6 +105,14 @@ remove() {
 
 this.el.removeObject3D('mesh');
 
+},
+
+tick(time) {
+
+this.el.object3D.rotation.y = time / 1000 * 0.22;
+
+this.el.object3D.rotation.x = Math.sin(time / 1000 * 0.12) * 0.12;
+
 }
 
 });
@@ -178,8 +186,8 @@ mat2 rotate2d(float angle) {
 }
 
 float mapScene(vec3 p) {
-  p.xz = rotate2d(0.45) * p.xz;
-  p.xy = rotate2d(-0.35) * p.xy;
+  p.xz = rotate2d(0.45 + time * 0.18) * p.xz;
+  p.xy = rotate2d(-0.35 + time * 0.11) * p.xy;
   return sdTorus(p, vec2(halfSize * 0.48, halfSize * 0.16));
 }
 
@@ -270,6 +278,206 @@ this.el.removeObject3D('mesh');
 
 });
 
+AFRAME.registerComponent('stereographic-grid', {
+
+schema: {
+
+planeSize: { type: 'number', default: 3.4 },
+
+sphereRadius: { type: 'number', default: 1.15 },
+
+divisions: { type: 'int', default: 28 },
+
+duration: { type: 'number', default: 7000 },
+
+color: { type: 'color', default: '#8FEAFF' }
+
+},
+
+init() {
+
+this.startedAt = null;
+
+const data = this.data;
+
+const divisions = data.divisions;
+
+const segments = 2 * (divisions + 1) * divisions;
+
+this.positions = new Float32Array(segments * 2 * 3);
+
+const geometry = new THREE.BufferGeometry();
+
+geometry.setAttribute('position', new THREE.BufferAttribute(this.positions, 3));
+
+const material = new THREE.LineBasicMaterial({
+
+color: data.color,
+
+transparent: true,
+
+opacity: 0.92
+
+});
+
+const lines = new THREE.LineSegments(geometry, material);
+
+this.geometry = geometry;
+
+this.el.setObject3D('mesh', lines);
+
+window.setTimeout(() => {
+
+const marker = this.el.closest('a-marker');
+
+if (marker) {
+
+marker.addEventListener('markerFound', () => {
+
+this.startedAt = null;
+
+});
+
+}
+
+}, 0);
+
+this.updateGrid(0);
+
+},
+
+smoothstep(value) {
+
+const t = Math.min(Math.max(value, 0), 1);
+
+return t * t * (3 - 2 * t);
+
+},
+
+projectPoint(x, z, progress) {
+
+const data = this.data;
+
+const radius = data.sphereRadius;
+
+const projectionScale = data.planeSize * 0.28;
+
+const u = x / projectionScale;
+
+const v = z / projectionScale;
+
+const denominator = u * u + v * v + 1;
+
+const sphereX = radius * 2 * u / denominator;
+
+const sphereY = radius * (u * u + v * v - 1) / denominator + radius;
+
+const sphereZ = radius * 2 * v / denominator;
+
+const planeY = 0.02;
+
+return new THREE.Vector3(
+
+THREE.MathUtils.lerp(x, sphereX, progress),
+
+THREE.MathUtils.lerp(planeY, sphereY + 0.02, progress),
+
+THREE.MathUtils.lerp(z, sphereZ, progress)
+
+);
+
+},
+
+writePoint(index, point) {
+
+this.positions[index] = point.x;
+
+this.positions[index + 1] = point.y;
+
+this.positions[index + 2] = point.z;
+
+},
+
+updateGrid(progress) {
+
+const data = this.data;
+
+const divisions = data.divisions;
+
+const halfSize = data.planeSize / 2;
+
+let offset = 0;
+
+for (let row = 0; row <= divisions; row++) {
+
+const z = -halfSize + (row / divisions) * data.planeSize;
+
+for (let column = 0; column < divisions; column++) {
+
+const x1 = -halfSize + (column / divisions) * data.planeSize;
+
+const x2 = -halfSize + ((column + 1) / divisions) * data.planeSize;
+
+this.writePoint(offset, this.projectPoint(x1, z, progress));
+
+this.writePoint(offset + 3, this.projectPoint(x2, z, progress));
+
+offset += 6;
+
+}
+
+}
+
+for (let column = 0; column <= divisions; column++) {
+
+const x = -halfSize + (column / divisions) * data.planeSize;
+
+for (let row = 0; row < divisions; row++) {
+
+const z1 = -halfSize + (row / divisions) * data.planeSize;
+
+const z2 = -halfSize + ((row + 1) / divisions) * data.planeSize;
+
+this.writePoint(offset, this.projectPoint(x, z1, progress));
+
+this.writePoint(offset + 3, this.projectPoint(x, z2, progress));
+
+offset += 6;
+
+}
+
+}
+
+this.geometry.attributes.position.needsUpdate = true;
+
+this.geometry.computeBoundingSphere();
+
+},
+
+tick(time) {
+
+if (this.startedAt === null) {
+
+this.startedAt = time;
+
+}
+
+const progress = this.smoothstep((time - this.startedAt) / this.data.duration);
+
+this.updateGrid(progress);
+
+this.el.object3D.rotation.y = time / 1000 * 0.16;
+
+},
+
+remove() {
+
+this.el.removeObject3D('mesh');
+
+}
+
+});
+
 </script>
 
 
@@ -336,9 +544,9 @@ opacity: 0.5;
 
 <h2 style="margin-top:0">WebAR Demo</h2>
 
-<p>1. Point your camera at a <strong>Hiro marker</strong>, <strong>Barcode marker #5</strong>, or <strong>Kanji marker</strong>.</p>
+<p>1. Point your camera at a <strong>Hiro marker</strong>, <strong>Barcode marker #5</strong>, <strong>Kanji marker</strong>, or <strong>Barcode marker #20</strong>.</p>
 
-<p>2. Hiro shows the video cube. Barcode #5 shows a trefoil knot. Kanji shows a hologram torus.</p>
+<p>2. Hiro shows the video cube. Barcode #5 shows a trefoil knot. Kanji shows a torus window. Barcode #20 shows a stereographic grid.</p>
 
 <p style="font-size: 0.8em; color: #aaa;">Status: <span id="status">Waiting for Marker...</span></p>
 
@@ -463,6 +671,23 @@ trefoil-knot="size: 2; tubeRadius: 0.32; color: #D4AF37">
 position="0 1 0"
 
 hologram-torus="size: 2; color: #00B85C">
+
+</a-entity>
+
+
+</a-marker>
+
+
+<a-marker type="barcode" value="20" id="projection-marker">
+
+
+<!-- A plane grid that slowly wraps onto a sphere by inverse stereographic projection -->
+
+<a-entity
+
+position="0 0 0"
+
+stereographic-grid="planeSize: 3.4; sphereRadius: 1.15; divisions: 28; duration: 7000; color: #8FEAFF">
 
 </a-entity>
 
