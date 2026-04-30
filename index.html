@@ -1,864 +1,383 @@
+<!-- 
+Palette: Cosmic Neon (Background: #0F172A, Primary: #8B5CF6, Secondary: #06B6D4, Accent: #FBBF24)
+Confirmation: NEITHER Mermaid JS NOR SVG were used anywhere in the output.
+Plan Summary:
+1. Introduction: Hook the user with the AR museum companion concept and core value proposition.
+2. Frictionless Onboarding: Compare WebAR vs. Native App retention using a Bar Chart to highlight the "no download" advantage.
+3. The Spatial Journey: Map the storyboard steps using an HTML/CSS Flowchart to show physical-to-digital navigation.
+4. Exhibit Engagement: Show interaction breakdown using a Doughnut Chart to detail how users spend time in the "Deep Dive".
+5. Gamification System: Highlight the exploration loop with structured HTML elements for achievements.
+Visualization Justifications:
+- Onboarding Comparison -> Goal: Compare -> Chart: Bar Chart -> Justification: Clearly shows sequential drop-off rates side-by-side to highlight WebAR efficiency. (Chart.js, NO SVG)
+- User Journey -> Goal: Organize/Process -> Chart: Flowchart -> Justification: Best for mapping the sequential 7-panel storyboard steps. (HTML/CSS, NO SVG)
+- Engagement Breakdown -> Goal: Compare/Composition -> Chart: Doughnut Chart -> Justification: Effectively shows the proportion of different interaction types during the 3D hologram phase. (Chart.js, NO SVG)
+-->
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>A-Frame WebAR Demo</title>
-
-<!-- A-Frame Library -->
-
-<script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-
-<!-- AR.js for A-Frame -->
-
-<script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-
+<title>AR Science Gallery: Experience Blueprint</title>
+<script src="https://cdn.tailwindcss.com"></script>
 <script>
-
-AFRAME.registerComponent('trefoil-knot', {
-
-schema: {
-
-size: { type: 'number', default: 2 },
-
-tubeRadius: { type: 'number', default: 0.16 },
-
-color: { type: 'color', default: '#F5B642' }
-
+tailwind.config = {
+theme: {
+extend: {
+colors: {
+cosmic: {
+dark: '#0F172A',
+card: '#1E293B',
+primary: '#8B5CF6',
+secondary: '#06B6D4',
+accent: '#FBBF24',
+text: '#F8FAFC',
+muted: '#94A3B8'
+}
 },
-
-init() {
-
-const data = this.data;
-
-class TrefoilCurve extends THREE.Curve {
-
-getPoint(t) {
-
-const angle = t * Math.PI * 2;
-
-return new THREE.Vector3(
-
-Math.sin(angle) + 2 * Math.sin(2 * angle),
-
-Math.cos(angle) - 2 * Math.cos(2 * angle),
-
--Math.sin(3 * angle)
-
-);
-
+fontFamily: {
+sans: ['Inter', 'system-ui', 'sans-serif'],
 }
-
 }
-
-const curve = new TrefoilCurve();
-
-const geometry = new THREE.TubeGeometry(curve, 192, data.tubeRadius, 18, true);
-
-geometry.computeBoundingBox();
-
-const box = geometry.boundingBox;
-
-const rawSize = new THREE.Vector3();
-
-box.getSize(rawSize);
-
-const scale = data.size / Math.max(rawSize.x, rawSize.y, rawSize.z);
-
-geometry.scale(scale, scale, scale);
-
-geometry.computeBoundingBox();
-
-const normalizedBox = geometry.boundingBox;
-
-const centerX = (normalizedBox.min.x + normalizedBox.max.x) / 2;
-
-const centerZ = (normalizedBox.min.z + normalizedBox.max.z) / 2;
-
-geometry.translate(-centerX, -normalizedBox.min.y, -centerZ);
-
-const material = new THREE.MeshStandardMaterial({
-
-color: data.color,
-
-roughness: 0.18,
-
-metalness: 0.85,
-
-emissive: new THREE.Color('#4A3300'),
-
-emissiveIntensity: 0.25
-
-});
-
-const mesh = new THREE.Mesh(geometry, material);
-
-this.el.setObject3D('mesh', mesh);
-
-},
-
-remove() {
-
-this.el.removeObject3D('mesh');
-
-},
-
-tick(time) {
-
-this.el.object3D.rotation.y = time / 1000 * 0.44;
-
-this.el.object3D.rotation.x = Math.sin(time / 1000 * 0.24) * 0.12;
-
 }
-
-});
-
-AFRAME.registerComponent('hologram-torus', {
-
-schema: {
-
-size: { type: 'number', default: 2 },
-
-color: { type: 'color', default: '#42F5FF' }
-
-},
-
-init() {
-
-const data = this.data;
-
-const geometry = new THREE.BoxGeometry(data.size, data.size, data.size);
-
-const material = new THREE.ShaderMaterial({
-
-transparent: false,
-
-depthWrite: true,
-
-blending: THREE.NormalBlending,
-
-side: THREE.FrontSide,
-
-uniforms: {
-
-time: { value: 0 },
-
-halfSize: { value: data.size / 2 },
-
-cameraLocalPosition: { value: new THREE.Vector3(0, 0, 4) },
-
-hologramColor: { value: new THREE.Color(data.color) }
-
-},
-
-vertexShader: `
-varying vec3 vLocalPosition;
-
-void main() {
-  vLocalPosition = position;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }
-`,
-
-fragmentShader: `
-precision highp float;
-
-uniform float time;
-uniform float halfSize;
-uniform vec3 cameraLocalPosition;
-uniform vec3 hologramColor;
-
-varying vec3 vLocalPosition;
-
-float sdTorus(vec3 p, vec2 torus) {
-  vec2 q = vec2(length(p.xz) - torus.x, p.y);
-  return length(q) - torus.y;
-}
-
-mat2 rotate2d(float angle) {
-  float s = sin(angle);
-  float c = cos(angle);
-  return mat2(c, -s, s, c);
-}
-
-float mapScene(vec3 p) {
-  p.xz = rotate2d(0.45 + time * 0.36) * p.xz;
-  p.xy = rotate2d(-0.35 + time * 0.22) * p.xy;
-  return sdTorus(p, vec2(halfSize * 0.48, halfSize * 0.16));
-}
-
-vec3 estimateNormal(vec3 p) {
-  vec2 e = vec2(0.006, 0.0);
-  return normalize(vec3(
-    mapScene(p + e.xyy) - mapScene(p - e.xyy),
-    mapScene(p + e.yxy) - mapScene(p - e.yxy),
-    mapScene(p + e.yyx) - mapScene(p - e.yyx)
-  ));
-}
-
-void main() {
-  vec3 ro = cameraLocalPosition;
-  vec3 rd = normalize(vLocalPosition - ro);
-  vec3 p = vLocalPosition + rd * 0.015;
-
-  float rayDistance = 0.0;
-  float hit = 0.0;
-  vec3 hitPoint = vec3(0.0);
-
-  for (int i = 0; i < 72; i++) {
-    vec3 samplePoint = p + rd * rayDistance;
-
-    if (max(max(abs(samplePoint.x), abs(samplePoint.y)), abs(samplePoint.z)) > halfSize * 1.15) {
-      break;
-    }
-
-    float d = mapScene(samplePoint);
-
-    if (d < 0.008) {
-      hit = 1.0;
-      hitPoint = samplePoint;
-      break;
-    }
-
-    rayDistance += clamp(abs(d) * 0.72, 0.018, 0.085);
-  }
-
-  vec3 normalColor = vec3(0.0);
-
-  if (hit > 0.5) {
-    vec3 normal = estimateNormal(hitPoint);
-    normalColor = normal * 0.5 + 0.5;
-  }
-
-  vec3 blackWindow = vec3(0.0);
-  vec3 color = mix(blackWindow, normalColor, hit);
-  gl_FragColor = vec4(color, 1.0);
-}
-`
-
-});
-
-const mesh = new THREE.Mesh(geometry, material);
-
-this.material = material;
-
-this.el.setObject3D('mesh', mesh);
-
-},
-
-tick(time) {
-
-if (!this.material) return;
-
-const camera = this.el.sceneEl.camera;
-
-if (camera) {
-
-const cameraWorldPosition = new THREE.Vector3();
-
-camera.getWorldPosition(cameraWorldPosition);
-
-this.material.uniforms.cameraLocalPosition.value.copy(this.el.object3D.worldToLocal(cameraWorldPosition));
-
-}
-
-this.material.uniforms.time.value = time / 1000;
-
-},
-
-remove() {
-
-this.el.removeObject3D('mesh');
-
-}
-
-});
-
-AFRAME.registerComponent('stereographic-grid', {
-
-schema: {
-
-planeSize: { type: 'number', default: 3.4 },
-
-sphereRadius: { type: 'number', default: 0.575 },
-
-divisions: { type: 'int', default: 28 },
-
-duration: { type: 'number', default: 3500 },
-
-color: { type: 'color', default: '#8FEAFF' }
-
-},
-
-init() {
-
-this.startedAt = null;
-
-const data = this.data;
-
-const divisions = data.divisions;
-
-const segments = 2 * (divisions + 1) * divisions;
-
-this.positions = new Float32Array(segments * 2 * 3);
-
-const geometry = new THREE.BufferGeometry();
-
-geometry.setAttribute('position', new THREE.BufferAttribute(this.positions, 3));
-
-const material = new THREE.LineBasicMaterial({
-
-color: data.color,
-
-transparent: true,
-
-opacity: 0.92
-
-});
-
-const lines = new THREE.LineSegments(geometry, material);
-
-this.geometry = geometry;
-
-this.el.setObject3D('mesh', lines);
-
-window.setTimeout(() => {
-
-const marker = this.el.closest('a-marker');
-
-if (marker) {
-
-marker.addEventListener('markerFound', () => {
-
-this.startedAt = null;
-
-});
-
-}
-
-}, 0);
-
-this.updateGrid(0);
-
-},
-
-smoothstep(value) {
-
-const t = Math.min(Math.max(value, 0), 1);
-
-return t * t * (3 - 2 * t);
-
-},
-
-projectPoint(x, z, progress) {
-
-const data = this.data;
-
-const radius = data.sphereRadius;
-
-const projectionScale = data.planeSize * 0.28;
-
-const u = x / projectionScale;
-
-const v = z / projectionScale;
-
-const denominator = u * u + v * v + 1;
-
-const sphereX = radius * 2 * u / denominator;
-
-const sphereY = radius * (u * u + v * v - 1) / denominator + radius;
-
-const sphereZ = radius * 2 * v / denominator;
-
-const planeY = 0.02;
-
-return new THREE.Vector3(
-
-THREE.MathUtils.lerp(x, sphereX, progress),
-
-THREE.MathUtils.lerp(planeY, sphereY + 0.02, progress),
-
-THREE.MathUtils.lerp(z, sphereZ, progress)
-
-);
-
-},
-
-writePoint(index, point) {
-
-this.positions[index] = point.x;
-
-this.positions[index + 1] = point.y;
-
-this.positions[index + 2] = point.z;
-
-},
-
-updateGrid(progress) {
-
-const data = this.data;
-
-const divisions = data.divisions;
-
-const halfSize = data.planeSize / 2;
-
-let offset = 0;
-
-for (let row = 0; row <= divisions; row++) {
-
-const z = -halfSize + (row / divisions) * data.planeSize;
-
-for (let column = 0; column < divisions; column++) {
-
-const x1 = -halfSize + (column / divisions) * data.planeSize;
-
-const x2 = -halfSize + ((column + 1) / divisions) * data.planeSize;
-
-this.writePoint(offset, this.projectPoint(x1, z, progress));
-
-this.writePoint(offset + 3, this.projectPoint(x2, z, progress));
-
-offset += 6;
-
-}
-
-}
-
-for (let column = 0; column <= divisions; column++) {
-
-const x = -halfSize + (column / divisions) * data.planeSize;
-
-for (let row = 0; row < divisions; row++) {
-
-const z1 = -halfSize + (row / divisions) * data.planeSize;
-
-const z2 = -halfSize + ((row + 1) / divisions) * data.planeSize;
-
-this.writePoint(offset, this.projectPoint(x, z1, progress));
-
-this.writePoint(offset + 3, this.projectPoint(x, z2, progress));
-
-offset += 6;
-
-}
-
-}
-
-this.geometry.attributes.position.needsUpdate = true;
-
-this.geometry.computeBoundingSphere();
-
-},
-
-tick(time) {
-
-if (this.startedAt === null) {
-
-this.startedAt = time;
-
-}
-
-const cycle = ((time - this.startedAt) / this.data.duration) % 2;
-
-const pingPong = cycle <= 1 ? cycle : 2 - cycle;
-
-const progress = this.smoothstep(pingPong);
-
-this.updateGrid(progress);
-
-},
-
-remove() {
-
-this.el.removeObject3D('mesh');
-
-}
-
-});
-
 </script>
-
-
 <style>
-
-body { margin: 0; overflow: hidden; font-family: sans-serif; }
-
-#ui-overlay {
-
-position: absolute;
-
-top: 10px;
-
-left: 10px;
-
-z-index: 10;
-
-background: rgba(0, 0, 0, 0.7);
-
-color: white;
-
-padding: 15px;
-
-border-radius: 8px;
-
-max-width: 500px;
-
-pointer-events: none;
-
+body {
+background-color: #0F172A;
+color: #F8FAFC;
 }
-
-.marker-guide {
-
-border: 2px solid #00ff00;
-
-width: 150px;
-
-height: 150px;
-
-position: absolute;
-
-top: 50%;
-
-left: 50%;
-
-transform: translate(-50%, -50%);
-
-pointer-events: none;
-
-opacity: 0.5;
-
+.chart-container {
+position: relative;
+width: 100%;
+max-width: 600px;
+margin-left: auto;
+margin-right: auto;
+height: 300px;
+max-height: 400px;
 }
-
+@media (min-width: 768px) {
+.chart-container {
+height: 350px;
+}
+}
+.journey-line {
+position: absolute;
+left: 23px;
+top: 0;
+bottom: 0;
+width: 2px;
+background: linear-gradient(to bottom, #8B5CF6, #06B6D4);
+z-index: 0;
+}
+.journey-node {
+position: relative;
+z-index: 1;
+}
 </style>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+<body class="antialiased min-h-screen">
 
-<body>
+<nav class="sticky top-0 z-50 bg-cosmic-dark/90 backdrop-blur border-b border-cosmic-card px-6 py-4 shadow-lg">
+<div class="max-w-6xl mx-auto flex justify-between items-center">
+<div class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cosmic-primary to-cosmic-secondary">
+&#10022; AR Science Gallery
+</div>
+<div class="hidden md:flex space-x-6 text-sm font-medium text-cosmic-muted">
+<a href="#onboarding" class="hover:text-cosmic-secondary transition-colors">Onboarding</a>
+<a href="#journey" class="hover:text-cosmic-secondary transition-colors">User Journey</a>
+<a href="#engagement" class="hover:text-cosmic-secondary transition-colors">Engagement</a>
+<a href="#gamification" class="hover:text-cosmic-secondary transition-colors">Gamification</a>
+</div>
+</div>
+</nav>
 
+<main class="max-w-6xl mx-auto px-6 py-12 space-y-24">
 
-<!-- UI Information Overlay -->
+<section class="text-center space-y-6 max-w-3xl mx-auto mt-12">
+<div class="inline-block p-4 rounded-full bg-cosmic-card shadow-[0_0_30px_rgba(139,92,246,0.3)] mb-4 text-4xl">
+&#128241;
+</div>
+<h1 class="text-5xl md:text-6xl font-extrabold tracking-tight">
+Bridging the Physical and Digital Universe.
+</h1>
+<p class="text-xl text-cosmic-muted leading-relaxed">
+An interactive blueprint of the AR Science Gallery companion app. By leveraging WebAR, spatial tracking, and gamification, we transform static museum exhibits into dynamic, multi-dimensional learning environments without the friction of traditional app downloads.
+</p>
+<div class="pt-8">
+<a href="ar-demo.html" class="inline-block px-12 py-4 bg-gradient-to-r from-cosmic-primary to-cosmic-secondary text-cosmic-dark font-bold text-xl rounded-lg hover:shadow-[0_0_40px_rgba(139,92,246,0.6)] transition-all duration-300 transform hover:scale-105">
+🚀 TRY AR DEMO
+</a>
+</div>
+</section>
 
-<div id="ui-overlay">
+<section id="onboarding" class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+<div class="space-y-6">
+<h2 class="text-3xl font-bold border-l-4 border-cosmic-accent pl-4">The Frictionless Launch</h2>
+<p class="text-cosmic-muted text-lg">
+The journey begins at the museum foyer. The critical hurdle for any digital museum companion is the initial adoption phase. Traditional mobile apps require finding the app store, downloading heavy files on potentially slow cellular networks, and creating accounts.
+</p>
+<p class="text-cosmic-muted text-lg">
+By utilizing <strong>WebAR</strong>, the visitor simply scans a QR code using their default camera app. A single tap launches the experience instantly. The chart compares the projected retention funnel of our Frictionless WebAR approach versus a traditional App Store download model.
+</p>
+<div class="bg-cosmic-card p-6 rounded-xl border border-cosmic-muted/20 flex items-center justify-between">
+<div>
+<div class="text-sm text-cosmic-muted uppercase tracking-wider">Time to First Interaction</div>
+<div class="text-3xl font-bold text-cosmic-accent">&lt; 5 Seconds</div>
+</div>
+<div class="text-4xl">&#8987;</div>
+</div>
+</div>
+<div class="bg-cosmic-card p-6 rounded-2xl shadow-2xl border border-cosmic-muted/10">
+<div class="chart-container">
+<canvas id="onboardingChart"></canvas>
+</div>
+</div>
+</section>
 
-<h2 style="margin-top:0">WebAR Demo</h2>
-
-<p>1. Point your camera at a <strong>Hiro marker</strong>, <strong>Barcode marker #5</strong>,
-     <strong>Kanji marker</strong>, or <strong>Barcode marker #20</strong>.</p>
-
-<p>2.Tab the screen for Music </p>
-
-<p style="font-size: 0.8em; color: #aaa;">Status: <span id="status">Waiting for Marker...</span></p>
-
+<section id="journey" class="bg-cosmic-card rounded-3xl p-8 md:p-12 border border-cosmic-primary/20 shadow-[0_0_50px_rgba(139,92,246,0.1)] relative overflow-hidden">
+<div class="absolute top-0 right-0 p-8 text-8xl text-cosmic-primary/5 opacity-50 select-none">&#10022;</div>
+<div class="max-w-3xl mx-auto space-y-12">
+<div class="text-center space-y-4 relative z-10">
+<h2 class="text-3xl font-bold text-cosmic-secondary">The Spatial Narrative Flow</h2>
+<p class="text-cosmic-muted text-lg">
+How visitors navigate the hybrid environment, from initial wayfinding to deep-dive interactions.
+</p>
 </div>
 
-
-<!-- Visual Guide for the User -->
-
-<div class="marker-guide"></div>
-
-
-<!--
-
-A-Scene setup:
-
-- embedded: keeps it within the div/body
-
-- arjs: initializes the AR engine
-
-- vr-mode-ui: disabled because we are using the phone screen as the view, not a headset
-
--->
-
-<a-scene
-
-embedded
-
-arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
-
-vr-mode-ui="enabled: false">
-
-
-<!-- Define the Assets (Materials, Models) -->
-
-<a-assets>
-
-<video
-id="cube-video"
-src="./video.mp4"
-preload="auto"
-autoplay
-loop
-muted
-playsinline
-webkit-playsinline>
-</video>
-
-<audio
-id="background-music"
-src="./Another%20World.mp3"
-preload="auto"
-loop>
-</audio>
-
-</a-assets>
-
-
-<!--A-Marker: The anchor for the AR content.
-
-"preset: hiro" uses the standard hiro pattern.
-
--->
-
-<a-marker preset="hiro" id="main-marker">
-
-
-<!-- A 2D Plane that appears when the marker is found -->
-
-<a-plane
-
-position="0 0 0"
-
-rotation="-90 0 0"
-
-width="3"
-
-height="2"
-
-material="src: #cube-video; shader: flat; color: #FFFFFF; transparent: false; opacity: 1">
-
-</a-plane>
-
-<a-text
-
-value="Double Slit experiment &#10; in Bohmian mechanics"
-
-
-position="-1 0.1 1"
-
-rotation="-90 0 0"
-
-align="left"
-
-anchor="left"
-
-color="#FF00FF"
-
-width="4">
-
-</a-text>
-
-
-
-
-
-</a-marker>
-
-
-<a-marker type="barcode" value="5" id="barcode-marker">
-
-
-<!-- A larger procedural trefoil knot that appears when Barcode marker #5 is found -->
-
-<a-entity
-
-position="0 0 0"
-
-trefoil-knot="size: 2; tubeRadius: 0.32; color: #D4AF37">
-
-</a-entity>
-
-<a-text
-
-value="Trefoil knot"
-
-position="-1 0.04 1"
-
-rotation="-90 0 0"
-
-align="left"
-
-anchor="left"
-
-color="#FFDD8A"
-
-width="4">
-
-</a-text>
-
-
-</a-marker>
-
-
-<a-marker preset="kanji" id="kanji-marker">
-
-
-<!-- A shader cube volume that raymarches a hologram torus on the Kanji marker -->
-
-<a-entity
-
-position="0 1 0"
-
-hologram-torus="size: 3.0; color: #00B85C">
-
-</a-entity>
-
-<a-text
-
-value="Ray marched Portal window"
-
-position="1 0.04 -2.1"
-
-rotation="0 180 0"
-
-align="left"
-
-anchor="left"
-
-color="#8DFFB0"
-
-width="4">
-
-</a-text>
-
-
-</a-marker>
-
-
-<a-marker type="barcode" value="20" id="projection-marker">
-
-
-<!-- A plane grid that slowly wraps onto a sphere by inverse stereographic projection -->
-
-<a-entity
-
-position="0 0 0"
-
-stereographic-grid="planeSize: 6.8; sphereRadius: 0.575; divisions: 28; duration: 3500; color: #8FEAFF">
-
-</a-entity>
-
-<a-text
-
-value="Stereographic projection"
-
-position="-1 0.04 0"
-
-rotation="-90 0 0"
-
-align="left"
-
-anchor="left"
-
-color="#AEEFFF"
-
-width="4">
-
-</a-text>
-
-
-</a-marker>
-
-
-<!-- Static camera that moves according to the marker position -->
-
-<a-entity camera></a-entity>
-
-
-</a-scene>
-
+<div class="relative pl-6">
+<div class="journey-line"></div>
+
+<div class="space-y-12">
+<div class="journey-node flex gap-6">
+<div class="w-12 h-12 rounded-full bg-cosmic-dark border-4 border-cosmic-secondary flex items-center justify-center text-xl shrink-0">1</div>
+<div>
+<h3 class="text-xl font-bold text-white mb-2">QR Scan & WebAR Load</h3>
+<p class="text-cosmic-muted">User points their native camera at the welcome kiosk. A WebAR link pops up, bridging the physical and digital worlds instantly with a spinning atom loading screen.</p>
+</div>
+</div>
+
+<div class="journey-node flex gap-6">
+<div class="w-12 h-12 rounded-full bg-cosmic-dark border-4 border-cosmic-primary flex items-center justify-center text-xl shrink-0">&#128099;</div>
+<div>
+<h3 class="text-xl font-bold text-white mb-2">Spatial Wayfinding</h3>
+<p class="text-cosmic-muted">Glowing AR footprints appear superimposed on the physical floor. A mini-map and navigation bar guide the user 50ft ahead to the Astrophysics Wing.</p>
+</div>
+</div>
+
+<div class="journey-node flex gap-6">
+<div class="w-12 h-12 rounded-full bg-cosmic-dark border-4 border-cosmic-accent flex items-center justify-center text-xl shrink-0">&#128269;</div>
+<div>
+<h3 class="text-xl font-bold text-white mb-2">Marker Recognition</h3>
+<p class="text-cosmic-muted">The user arrives at the physical Sun exhibit. The app's reticle locks onto a geometric AR marker below the plaque, prompting the user to step back.</p>
+</div>
+</div>
+
+<div class="journey-node flex gap-6">
+<div class="w-12 h-12 rounded-full bg-cosmic-dark border-4 border-cosmic-secondary flex items-center justify-center text-xl shrink-0">&#127756;</div>
+<div>
+<h3 class="text-xl font-bold text-white mb-2">The Magic Reveal (Spawn)</h3>
+<p class="text-cosmic-muted">3D holographic planets spawn, orbiting the physical Sun pedestal in real-time. The digital content remains perfectly locked in spatial perspective as the user walks around.</p>
+</div>
+</div>
+
+<div class="journey-node flex gap-6">
+<div class="w-12 h-12 rounded-full bg-cosmic-dark border-4 border-cosmic-primary flex items-center justify-center text-xl shrink-0">&#128242;</div>
+<div>
+<h3 class="text-xl font-bold text-white mb-2">Deep Dive Interaction</h3>
+<p class="text-cosmic-muted">Tapping a glowing hotspot near Jupiter pauses the orbit. A semi-transparent info panel reveals a 3D cross-section of the core, audio playback, and comparison toggles.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="engagement" class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+<div class="order-2 md:order-1 bg-cosmic-card p-6 rounded-2xl shadow-2xl border border-cosmic-muted/10">
+<div class="chart-container">
+<canvas id="engagementChart"></canvas>
+</div>
+</div>
+<div class="space-y-6 order-1 md:order-2">
+<h2 class="text-3xl font-bold border-l-4 border-cosmic-primary pl-4">Exhibit Engagement Profile</h2>
+<p class="text-cosmic-muted text-lg">
+Once the AR experience spawns around a physical object, user behavior shifts. The application is designed not just for flashy visuals, but for layered educational engagement.
+</p>
+<p class="text-cosmic-muted text-lg">
+This visualization breaks down the projected distribution of time spent during an active exhibit interaction. A significant portion of time is dedicated to exploring the spatial relationships of the 3D models (Orbit Observation), followed closely by reading the multi-media Info Panels triggered by interactive hotspots.
+</p>
+<ul class="space-y-3 mt-4">
+<li class="flex items-center text-cosmic-muted">
+<span class="text-cosmic-secondary mr-2">&#9632;</span> <strong>Spatial Immersion:</strong> Walking around the physical pedestal.
+</li>
+<li class="flex items-center text-cosmic-muted">
+<span class="text-cosmic-primary mr-2">&#9632;</span> <strong>Deep Learning:</strong> Reading "Did you know?" popups.
+</li>
+<li class="flex items-center text-cosmic-muted">
+<span class="text-cosmic-accent mr-2">&#9632;</span> <strong>Navigation:</strong> Following AR footprints to the next node.
+</li>
+</ul>
+</div>
+</section>
+
+<section id="gamification" class="space-y-12 pt-12 border-t border-cosmic-card">
+<div class="text-center max-w-2xl mx-auto space-y-4">
+<h2 class="text-3xl font-bold text-white">Gamification & Retention</h2>
+<p class="text-cosmic-muted text-lg">
+To ensure visitors explore the entire science center, the app employs a seamless gamification loop. Closing an info panel triggers an achievement system, transitioning smoothly back into wayfinding mode.
+</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-gradient-to-br from-cosmic-card to-cosmic-dark p-8 rounded-2xl border border-cosmic-muted/20 text-center space-y-4 transform hover:-translate-y-2 transition-transform">
+<div class="text-5xl mb-4">&#127775;</div>
+<div class="text-sm uppercase tracking-widest text-cosmic-accent font-bold">Current Objective</div>
+<h3 class="text-2xl font-bold">Find 5 AR Tags</h3>
+<p class="text-cosmic-muted text-sm">Scattered across different wings of the museum to encourage full exploration.</p>
+</div>
+
+<div class="bg-gradient-to-br from-cosmic-card to-cosmic-dark p-8 rounded-2xl border border-cosmic-primary/50 text-center space-y-4 transform hover:-translate-y-2 transition-transform shadow-[0_0_20px_rgba(139,92,246,0.2)]">
+<div class="text-5xl mb-4">&#127942;</div>
+<div class="text-sm uppercase tracking-widest text-cosmic-primary font-bold">Achievement Unlocked</div>
+<h3 class="text-2xl font-bold">Solar Explorer</h3>
+<p class="text-cosmic-muted text-sm">Awarded for completing the deep dive on the Jupiter core structure.</p>
+</div>
+
+<div class="bg-gradient-to-br from-cosmic-card to-cosmic-dark p-8 rounded-2xl border border-cosmic-muted/20 text-center space-y-4 transform hover:-translate-y-2 transition-transform">
+<div class="text-5xl mb-4">&#128205;</div>
+<div class="text-sm uppercase tracking-widest text-cosmic-secondary font-bold">Next Waypoint</div>
+<h3 class="text-2xl font-bold">Prehistoric Era</h3>
+<p class="text-cosmic-muted text-sm">Follow the glowing tracks on the floor to the next targeted physical exhibit.</p>
+</div>
+</div>
+</section>
+
+</main>
+
+<footer class="border-t border-cosmic-card mt-24 py-8 text-center text-cosmic-muted text-sm">
+<p>AR Science Gallery Concept Analysis &bull; Designed for single-page presentation</p>
+</footer>
 
 <script>
-
-// Simple logic to update the UI status based on marker detection
-
-const markers = document.querySelectorAll('a-marker');
-
-const statusText = document.querySelector('#status');
-
-const cubeVideo = document.querySelector('#cube-video');
-
-const backgroundMusic = document.querySelector('#background-music');
-
-const visibleMarkers = new Set();
-
-
-function playCubeVideo() {
-
-cubeVideo.muted = true;
-
-cubeVideo.play().catch((error) => {
-
-console.warn('Video playback was blocked:', error);
-
-});
-
+const wrapLabel = (label) => {
+if(label.length <= 16) return label;
+const words = label.split(' ');
+let lines = [];
+let currentLine = '';
+words.forEach(word => {
+if ((currentLine + word).length > 16) {
+lines.push(currentLine.trim());
+currentLine = word + ' ';
+} else {
+currentLine += word + ' ';
 }
-
-
-function playBackgroundMusic() {
-
-backgroundMusic.volume = 0.2;
-
-backgroundMusic.play().catch((error) => {
-
-console.warn('Background music playback was blocked:', error);
-
 });
+lines.push(currentLine.trim());
+return lines;
+};
 
+const commonTooltipConfig = {
+plugins: {
+tooltip: {
+callbacks: {
+title: function(tooltipItems) {
+const item = tooltipItems[0];
+let label = item.chart.data.labels[item.dataIndex];
+if (Array.isArray(label)) {
+return label.join(' ');
+} else {
+return label;
 }
-
-
-function retryBackgroundMusicOnGesture() {
-
-if (!backgroundMusic.paused) return;
-
-playBackgroundMusic();
-
 }
+}
+}
+}
+};
 
+const rawOnboardingLabels = ['Initial Museum Arrival', 'Noticed Signage', 'Scanned QR / Searched Store', 'Launched App', 'Engaged with Exhibit'];
+const onboardingLabels = rawOnboardingLabels.map(wrapLabel);
 
-markers.forEach((marker) => {
-
-marker.addEventListener('markerFound', () => {
-
-visibleMarkers.add(marker.id);
-
-statusText.innerText = visibleMarkers.size === 1 ? "1 Marker Found!" : `${visibleMarkers.size} Markers Found!`;
-
-statusText.style.color = "#00ff00";
-
-playCubeVideo();
-
+const ctxOnboarding = document.getElementById('onboardingChart').getContext('2d');
+new Chart(ctxOnboarding, {
+type: 'bar',
+data: {
+labels: onboardingLabels,
+datasets: [
+{
+label: 'WebAR Flow (% Retention)',
+data: [100, 95, 90, 88, 85],
+backgroundColor: 'rgba(6, 182, 212, 0.8)',
+borderColor: '#06B6D4',
+borderWidth: 1,
+borderRadius: 4
+},
+{
+label: 'Native App Flow (% Retention)',
+data: [100, 95, 40, 20, 15],
+backgroundColor: 'rgba(139, 92, 246, 0.4)',
+borderColor: '#8B5CF6',
+borderWidth: 1,
+borderRadius: 4
+}
+]
+},
+options: {
+responsive: true,
+maintainAspectRatio: false,
+scales: {
+y: {
+beginAtZero: true,
+max: 100,
+grid: { color: 'rgba(148, 163, 184, 0.1)' },
+ticks: { color: '#94A3B8', callback: function(value){return value+='%'}}
+},
+x: {
+grid: { display: false },
+ticks: { color: '#94A3B8', autoSkip: false, maxRotation: 0 }
+}
+},
+plugins: {
+legend: { labels: { color: '#F8FAFC' } },
+tooltip: commonTooltipConfig.plugins.tooltip
+}
+}
 });
 
+const rawEngagementLabels = ['Orbit Observation & Scaling', 'Reading Info Panels & Audio', 'Wayfinding & Movement', 'UI Navigation'];
+const engagementLabels = rawEngagementLabels.map(wrapLabel);
 
-marker.addEventListener('markerLost', () => {
-
-visibleMarkers.delete(marker.id);
-
-statusText.innerText = visibleMarkers.size === 0 ? "Waiting for Marker..." : `${visibleMarkers.size} Marker Still Found!`;
-
-statusText.style.color = visibleMarkers.size === 0 ? "#aaa" : "#00ff00";
-
+const ctxEngagement = document.getElementById('engagementChart').getContext('2d');
+new Chart(ctxEngagement, {
+type: 'doughnut',
+data: {
+labels: engagementLabels,
+datasets: [{
+data: [40, 35, 15, 10],
+backgroundColor: [
+'#06B6D4',
+'#8B5CF6',
+'#FBBF24',
+'#1E293B'
+],
+borderColor: '#0F172A',
+borderWidth: 4,
+hoverOffset: 4
+}]
+},
+options: {
+responsive: true,
+maintainAspectRatio: false,
+cutout: '70%',
+plugins: {
+legend: {
+position: 'right',
+labels: { color: '#F8FAFC', padding: 20 }
+},
+tooltip: commonTooltipConfig.plugins.tooltip
+}
+}
 });
-
-});
-
-
-playCubeVideo();
-
-playBackgroundMusic();
-
-window.addEventListener('pointerdown', retryBackgroundMusicOnGesture, { once: true });
-
-window.addEventListener('touchstart', retryBackgroundMusicOnGesture, { once: true });
-
 </script>
-
 </body>
-
 </html>
