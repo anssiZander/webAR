@@ -81,7 +81,7 @@ opacity: 0.5;
 
 <h2 style="margin-top:0">WebAR Demo</h2>
 
-<p>1. Point your camera at a <strong>Hiro Marker</strong>.</p>
+<p>1. Point your camera at the <strong>QR marker</strong>.</p>
 
 <p>2. A 3D interactive box will appear on top of it.</p>
 
@@ -134,13 +134,9 @@ webkit-playsinline>
 </a-assets>
 
 
-<!--A-Marker: The anchor for the AR content.
+<!--A-Marker: The anchor for the AR content. -->
 
-"preset: hiro" uses the standard hiro pattern.
-
--->
-
-<a-marker preset="hiro" id="main-marker">
+<a-marker type="pattern" url="./github-pages-qr.patt" patternRatio="0.5" id="main-marker">
 
 
 <!-- A 3D Box that appears when the marker is found -->
