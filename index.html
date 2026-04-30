@@ -284,11 +284,11 @@ schema: {
 
 planeSize: { type: 'number', default: 3.4 },
 
-sphereRadius: { type: 'number', default: 1.15 },
+sphereRadius: { type: 'number', default: 0.575 },
 
 divisions: { type: 'int', default: 28 },
 
-duration: { type: 'number', default: 7000 },
+duration: { type: 'number', default: 3500 },
 
 color: { type: 'color', default: '#8FEAFF' }
 
@@ -462,11 +462,13 @@ this.startedAt = time;
 
 }
 
-const progress = this.smoothstep((time - this.startedAt) / this.data.duration);
+const cycle = ((time - this.startedAt) / this.data.duration) % 2;
+
+const pingPong = cycle <= 1 ? cycle : 2 - cycle;
+
+const progress = this.smoothstep(pingPong);
 
 this.updateGrid(progress);
-
-this.el.object3D.rotation.y = time / 1000 * 0.16;
 
 },
 
@@ -687,7 +689,7 @@ hologram-torus="size: 2; color: #00B85C">
 
 position="0 0 0"
 
-stereographic-grid="planeSize: 3.4; sphereRadius: 1.15; divisions: 28; duration: 7000; color: #8FEAFF">
+stereographic-grid="planeSize: 3.4; sphereRadius: 0.575; divisions: 28; duration: 3500; color: #8FEAFF">
 
 </a-entity>
 

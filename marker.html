@@ -27,24 +27,61 @@
       }
 
       h2 {
-        margin-top: 32px;
+        margin: 0 0 8px 0;
       }
 
       p {
         line-height: 1.5;
       }
 
-      img {
+      .marker-card {
+        display: grid;
+        grid-template-columns: minmax(160px, 240px) 1fr;
+        gap: 24px;
+        align-items: center;
+        margin: 28px 0;
+        padding: 20px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: #f9fafb;
+      }
+
+      .marker-card img {
         display: block;
         width: 100%;
-        max-width: 420px;
-        margin: 24px auto;
+        max-width: 240px;
+        margin: 0;
         background: white;
         image-rendering: pixelated;
       }
 
+      .marker-card p {
+        margin: 0;
+        color: #4b5563;
+      }
+
+      .marker-name {
+        margin-bottom: 8px;
+        color: #111827;
+        font-size: 0.9rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
       a {
         color: #2563eb;
+      }
+
+      @media (max-width: 640px) {
+        .marker-card {
+          grid-template-columns: 1fr;
+        }
+
+        .marker-card img {
+          max-width: 360px;
+          margin: 0 auto;
+        }
       }
 
       @media print {
@@ -72,40 +109,57 @@
         Show either marker on another screen or print them, then point the AR
         demo camera at them.
       </p>
-      <h2>Hiro marker</h2>
-      <img
-        src="./hiro.png"
-        alt="Hiro marker"
-      />
-      <h2>Barcode marker #5</h2>
-      <p>
-        This marker spawns the larger procedural trefoil knot.
-      </p>
-      <img
-        src="./assets/markers/barcode-5@4x.png"
-        alt="Barcode marker number 5"
-      />
-      <h2>Kanji marker</h2>
-      <p>
-        This marker spawns the hologram torus shader.
-      </p>
-      <img
-        src="./assets/markers/kanji-marker.png"
-        alt="Kanji marker"
-      />
+      <section class="marker-card">
+        <img
+          src="./hiro.png"
+          alt="Hiro marker"
+        />
+        <div>
+          <div class="marker-name">Hiro marker</div>
+          <h2>Double Slit experiment in Bohmian mechanics</h2>
+          <p>Spawns the video cube.</p>
+        </div>
+      </section>
+
+      <section class="marker-card">
+        <img
+          src="./assets/markers/barcode-5@4x.png"
+          alt="Barcode marker number 5"
+        />
+        <div>
+          <div class="marker-name">Barcode marker #5</div>
+          <h2>Metallic trefoil knot</h2>
+          <p>Spawns the rotating golden trefoil knot.</p>
+        </div>
+      </section>
+
+      <section class="marker-card">
+        <img
+          src="./assets/markers/kanji-marker.png"
+          alt="Kanji marker"
+        />
+        <div>
+          <div class="marker-name">Kanji marker</div>
+          <h2>Normal-shaded torus window</h2>
+          <p>Spawns the raymarched torus inside a black shader volume.</p>
+        </div>
+      </section>
       <p class="no-print">
         Kanji marker image source:
         <a href="https://commons.wikimedia.org/wiki/File:Kanji_marker_ARjs.png">Wikimedia Commons</a>.
       </p>
-      <h2>Barcode marker #20</h2>
-      <p>
-        This marker spawns a plane grid that slowly wraps into a sphere using
-        inverse stereographic projection.
-      </p>
-      <img
-        src="./assets/markers/barcode-20@4x.png"
-        alt="Barcode marker number 20"
-      />
+
+      <section class="marker-card">
+        <img
+          src="./assets/markers/barcode-20@4x.png"
+          alt="Barcode marker number 20"
+        />
+        <div>
+          <div class="marker-name">Barcode marker #20</div>
+          <h2>Stereographic projection grid</h2>
+          <p>A plane grid ping-pongs into a sphere using inverse stereographic projection.</p>
+        </div>
+      </section>
       <p class="no-print">
         Barcode #20 marker image source:
         <a href="https://github.com/artoolkit/artoolkit5/blob/master/doc/patterns/Matrix%20code%203x3%20%2872dpi%29/20.png">ARToolKit5 marker set</a>.
