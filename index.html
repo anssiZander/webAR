@@ -17,6 +17,96 @@
 
 <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 
+<script>
+
+AFRAME.registerComponent('trefoil-knot', {
+
+schema: {
+
+size: { type: 'number', default: 2 },
+
+tubeRadius: { type: 'number', default: 0.16 },
+
+color: { type: 'color', default: '#F5B642' }
+
+},
+
+init() {
+
+const data = this.data;
+
+class TrefoilCurve extends THREE.Curve {
+
+getPoint(t) {
+
+const angle = t * Math.PI * 2;
+
+return new THREE.Vector3(
+
+Math.sin(angle) + 2 * Math.sin(2 * angle),
+
+Math.cos(angle) - 2 * Math.cos(2 * angle),
+
+-Math.sin(3 * angle)
+
+);
+
+}
+
+}
+
+const curve = new TrefoilCurve();
+
+const geometry = new THREE.TubeGeometry(curve, 192, data.tubeRadius, 18, true);
+
+geometry.computeBoundingBox();
+
+const box = geometry.boundingBox;
+
+const rawSize = new THREE.Vector3();
+
+box.getSize(rawSize);
+
+const scale = data.size / Math.max(rawSize.x, rawSize.y, rawSize.z);
+
+geometry.scale(scale, scale, scale);
+
+geometry.computeBoundingBox();
+
+const normalizedBox = geometry.boundingBox;
+
+const centerX = (normalizedBox.min.x + normalizedBox.max.x) / 2;
+
+const centerZ = (normalizedBox.min.z + normalizedBox.max.z) / 2;
+
+geometry.translate(-centerX, -normalizedBox.min.y, -centerZ);
+
+const material = new THREE.MeshStandardMaterial({
+
+color: data.color,
+
+roughness: 0.38,
+
+metalness: 0.18
+
+});
+
+const mesh = new THREE.Mesh(geometry, material);
+
+this.el.setObject3D('mesh', mesh);
+
+},
+
+remove() {
+
+this.el.removeObject3D('mesh');
+
+}
+
+});
+
+</script>
+
 
 <style>
 
@@ -83,7 +173,7 @@ opacity: 0.5;
 
 <p>1. Point your camera at a <strong>Hiro marker</strong> or <strong>Barcode marker #5</strong>.</p>
 
-<p>2. The Hiro marker shows the video cube. Barcode #5 shows a larger default cube.</p>
+<p>2. The Hiro marker shows the video cube. Barcode #5 shows a larger trefoil knot.</p>
 
 <p style="font-size: 0.8em; color: #aaa;">Status: <span id="status">Waiting for Marker...</span></p>
 
@@ -177,21 +267,15 @@ animation="property: scale; from: 1 1 1; to: 1.2 1.2 1.2; dir: alternate; loop: 
 <a-marker type="barcode" value="5" id="barcode-marker">
 
 
-<!-- A larger default cube that appears when Barcode marker #5 is found -->
+<!-- A larger procedural trefoil knot that appears when Barcode marker #5 is found -->
 
-<a-box
+<a-entity
 
-width="2"
+position="0 0 0"
 
-height="2"
+trefoil-knot="size: 2; tubeRadius: 0.16; color: #F5B642">
 
-depth="2"
-
-position="0 1 0"
-
-material="color: #4CC3D9; transparent: true; opacity: 0.9">
-
-</a-box>
+</a-entity>
 
 
 </a-marker>
