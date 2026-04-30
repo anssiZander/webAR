@@ -546,10 +546,9 @@ opacity: 0.5;
 
 <h2 style="margin-top:0">WebAR Demo</h2>
 
-<p>1. Point your camera at a <strong>Hiro marker</strong>, <strong>Barcode marker #5</strong>, 
-    <strong>Kanji marker</strong>, or <strong>Barcode marker #20</strong>.</p>
+<p>1. Point your camera at a <strong>Hiro marker</strong>, <strong>Barcode marker #5</strong>, <strong>Kanji marker</strong>, or <strong>Barcode marker #20</strong>.</p>
 
-<p>2. Tab the screen to play Music </p>
+<p>2. Hiro shows the video cube. Barcode #5 shows a trefoil knot. Kanji shows a torus window. Barcode #20 shows a stereographic grid.</p>
 
 <p style="font-size: 0.8em; color: #aaa;">Status: <span id="status">Waiting for Marker...</span></p>
 
@@ -652,7 +651,24 @@ width="4">
 </a-text>
 
 
+<!-- A rotating ring around the base -->
 
+<a-ring
+
+color="#EF2D5E"
+
+radius-inner="0.6"
+
+radius-outer="0.7"
+
+rotation="-90 0 0"
+
+animation="property: scale; from: 1 1 1; to: 1.2 1.2 1.2; dir: alternate; loop: true; dur: 1000">
+
+</a-ring>
+
+
+</a-marker>
 
 
 <a-marker type="barcode" value="5" id="barcode-marker">
@@ -699,7 +715,7 @@ width="4">
 
 position="0 1 0"
 
-hologram-torus="size: 3.0; color: #00B85C">
+hologram-torus="size: 2.5; color: #00B85C">
 
 </a-entity>
 
@@ -707,7 +723,7 @@ hologram-torus="size: 3.0; color: #00B85C">
 
 value="Ray marched Portal window"
 
-position="1 0.04 -2.1"
+position="1 0.04 -2.0"
 
 rotation="0 180 0"
 
