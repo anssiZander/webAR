@@ -109,9 +109,9 @@ this.el.removeObject3D('mesh');
 
 tick(time) {
 
-this.el.object3D.rotation.y = time / 1000 * 0.22;
+this.el.object3D.rotation.y = time / 1000 * 0.44;
 
-this.el.object3D.rotation.x = Math.sin(time / 1000 * 0.12) * 0.12;
+this.el.object3D.rotation.x = Math.sin(time / 1000 * 0.24) * 0.12;
 
 }
 
@@ -186,8 +186,8 @@ mat2 rotate2d(float angle) {
 }
 
 float mapScene(vec3 p) {
-  p.xz = rotate2d(0.45 + time * 0.18) * p.xz;
-  p.xy = rotate2d(-0.35 + time * 0.11) * p.xy;
+  p.xz = rotate2d(0.45 + time * 0.36) * p.xz;
+  p.xy = rotate2d(-0.35 + time * 0.22) * p.xy;
   return sdTorus(p, vec2(halfSize * 0.48, halfSize * 0.16));
 }
 
@@ -625,6 +625,24 @@ material="src: #cube-video; shader: flat; color: #FFFFFF; transparent: false; op
 
 </a-box>
 
+<a-text
+
+value="Double Slit experiment in Bohmian mechanics"
+
+position="1.15 0.04 0"
+
+rotation="-90 0 0"
+
+align="left"
+
+anchor="left"
+
+color="#FFFFFF"
+
+width="2.4">
+
+</a-text>
+
 
 <!-- A rotating ring around the base -->
 
@@ -659,6 +677,24 @@ trefoil-knot="size: 2; tubeRadius: 0.32; color: #D4AF37">
 
 </a-entity>
 
+<a-text
+
+value="Metallic trefoil knot"
+
+position="1.35 0.04 0"
+
+rotation="-90 0 0"
+
+align="left"
+
+anchor="left"
+
+color="#FFE08A"
+
+width="2">
+
+</a-text>
+
 
 </a-marker>
 
@@ -676,6 +712,24 @@ hologram-torus="size: 2; color: #00B85C">
 
 </a-entity>
 
+<a-text
+
+value="Normal-shaded torus window"
+
+position="1.35 0.04 0"
+
+rotation="-90 0 0"
+
+align="left"
+
+anchor="left"
+
+color="#8DFFB0"
+
+width="2.2">
+
+</a-text>
+
 
 </a-marker>
 
@@ -689,9 +743,27 @@ hologram-torus="size: 2; color: #00B85C">
 
 position="0 0 0"
 
-stereographic-grid="planeSize: 3.4; sphereRadius: 0.575; divisions: 28; duration: 3500; color: #8FEAFF">
+stereographic-grid="planeSize: 6.8; sphereRadius: 0.575; divisions: 28; duration: 3500; color: #8FEAFF">
 
 </a-entity>
+
+<a-text
+
+value="Stereographic projection grid"
+
+position="1.35 0.04 0"
+
+rotation="-90 0 0"
+
+align="left"
+
+anchor="left"
+
+color="#AEEFFF"
+
+width="2.2">
+
+</a-text>
 
 
 </a-marker>
